@@ -1,0 +1,99 @@
+package me.alexjs.dag;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class SimpleForest<T> implements Dag<T> {
+
+    private final Map<T, Set<T>> forest;
+
+    public SimpleForest() {
+        this.forest = new HashMap<>();
+    }
+
+    @Override
+    public void add(T parent, T child) {
+        if (!forest.containsKey(parent)) {
+            Set<T> children = new HashSet<>();
+            children.add(child);
+            forest.put(parent, children);
+        } else {
+            forest.get(parent).add(child);
+        }
+        if (!forest.containsKey(child)) {
+            forest.put(child, new HashSet<>());
+        }
+    }
+
+    @Override
+    public List<T> topologicalSort() {
+
+        // https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm
+        // Great for running a task on these elements in a single thread
+
+        List<T> sorted = new LinkedList<>();
+        Deque<T> s = new LinkedList<>(getRoots());
+
+        Map<T, Set<T>> copy = asMap();
+
+        while (!s.isEmpty()) {
+            T n = s.pop();
+            sorted.add(n);
+            for (T m : copy.remove(n)) {
+                boolean hasParents = copy.values().stream().anyMatch(entry -> entry.contains(m));
+                if (!hasParents) {
+                    s.add(m);
+                }
+            }
+        }
+
+        if (!copy.values().stream().allMatch(Set::isEmpty)) {
+            // Circular Dependency
+            return null;
+        }
+
+        return sorted;
+
+    }
+
+    @Override
+    public Set<T> getRoots() {
+        Set<T> roots = new HashSet<>(forest.keySet());
+        for (Set<T> children : forest.values()) {
+            roots.removeAll(children);
+        }
+        return roots;
+    }
+
+    @Override
+    public Set<T> getLeaves() {
+        Set<T> leaves = new HashSet<>();
+        for (Map.Entry<T, Set<T>> entry : forest.entrySet()) {
+            if (entry.getValue().isEmpty()) {
+                leaves.add(entry.getKey());
+            }
+        }
+        return leaves;
+    }
+
+    @Override
+    public Set<T> getParents(T child) {
+        return forest.entrySet().stream()
+                .filter(e -> e.getValue().contains(child))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<T> getChildren(T parent) {
+        return new HashSet<>(forest.get(parent));
+    }
+
+    @Override
+    public Map<T, Set<T>> asMap() {
+        Map<T, Set<T>> copy = new HashMap<>();
+        forest.forEach((key, value) -> copy.put(key, new HashSet<>(value)));
+        return copy;
+    }
+
+}
