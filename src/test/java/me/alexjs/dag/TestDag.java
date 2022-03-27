@@ -58,11 +58,11 @@ public class TestDag {
     }
 
     private void populateDag(Dag<Integer> dag) {
-        int bound = random.nextInt(500) + 500;
+        int bound = random.nextInt(5000) + 5000;
         for (int i = 0; i < bound; i++) {
             // A parent will always be strictly less than its children to ensure no circular dependencies
-            int parent = random.nextInt(50);
-            int child = parent + random.nextInt(50) + 1;
+            int parent = random.nextInt(500);
+            int child = parent + random.nextInt(500) + 1;
             dag.add(parent, child);
         }
     }
