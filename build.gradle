@@ -4,6 +4,7 @@ plugins {
 }
 
 group 'me.alexjs'
+version '1.0'
 
 repositories {
     mavenCentral()
