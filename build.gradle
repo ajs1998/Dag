@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'me.alexjs'
-version '1.0'
+version '1.1'
 
 repositories {
     mavenCentral()
@@ -23,11 +23,16 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/ajs1998/Dag"
+            url = uri("https://maven.pkg.github.com/ajs1998/Dag")
             credentials {
                 username = System.getenv("USERNAME")
                 password = System.getenv("TOKEN")
             }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
         }
     }
 }
