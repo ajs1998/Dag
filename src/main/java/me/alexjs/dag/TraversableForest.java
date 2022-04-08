@@ -40,8 +40,8 @@ public class TraversableForest<T> extends SimpleForest<T> {
         }
         // Apply fn to node, remove node from the forest, then visit its parent nodes
         executorService.submit(() -> {
+            fn.accept(node);
             synchronized (forest) {
-                fn.accept(node);
                 forest.remove(node);
                 for (T parent : getParents(forest, node)) {
                     forest.get(parent).remove(node);
