@@ -77,6 +77,24 @@ public class SimpleForest<T> implements Dag<T> {
     }
 
     @Override
+    public Set<T> getAncestors(T node) {
+        Set<T> ancestors = getParents(node);
+        for (T ancestor : new HashSet<>(ancestors)) {
+            ancestors.addAll(getAncestors(ancestor));
+        }
+        return ancestors;
+    }
+
+    @Override
+    public Set<T> getDescendants(T node) {
+        Set<T> descendants = getChildren(node);
+        for (T descendant : new HashSet<>(descendants)) {
+            descendants.addAll(getDescendants(descendant));
+        }
+        return descendants;
+    }
+
+    @Override
     public Set<T> getParents(T child) {
         return forest.entrySet().stream()
                 .filter(e -> e.getValue().contains(child))

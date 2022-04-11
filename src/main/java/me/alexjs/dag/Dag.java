@@ -32,6 +32,10 @@ public interface Dag<T> {
 
     Set<T> getLeaves();
 
+    Set<T> getAncestors(T node);
+
+    Set<T> getDescendants(T node);
+
     Set<T> getParents(T child);
 
     Set<T> getChildren(T parent);
