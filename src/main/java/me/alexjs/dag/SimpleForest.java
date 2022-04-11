@@ -86,7 +86,12 @@ public class SimpleForest<T> implements Dag<T> {
 
     @Override
     public Set<T> getChildren(T parent) {
-        return new HashSet<>(forest.get(parent));
+        Set<T> children = forest.get(parent);
+        if (children == null) {
+            return new HashSet<>();
+        } else {
+            return new HashSet<>(children);
+        }
     }
 
     @Override
