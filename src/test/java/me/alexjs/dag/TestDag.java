@@ -13,7 +13,7 @@ public class TestDag {
     private final Random random;
 
     public TestDag() {
-        this.random = new Random(0);
+        this.random = new Random();
     }
 
     @Test
@@ -80,12 +80,14 @@ public class TestDag {
         for (Integer ancestor : ancestors) {
             Assertions.assertTrue(ancestor < node);
         }
+        Assertions.assertTrue(ancestors.containsAll(dag.getParents(node)));
 
         Set<Integer> descendants = dag.getDescendants(node);
         Assertions.assertFalse(descendants.isEmpty());
         for (Integer descendant : descendants) {
             Assertions.assertTrue(descendant > node);
         }
+        Assertions.assertTrue(descendants.containsAll(dag.getChildren(node)));
 
     }
 
