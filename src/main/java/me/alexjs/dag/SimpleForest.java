@@ -96,10 +96,13 @@ public class SimpleForest<T> implements Dag<T> {
 
     @Override
     public Set<T> getParents(T child) {
-        return forest.entrySet().stream()
-                .filter(e -> e.getValue().contains(child))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
+        Set<T> set = new HashSet<>();
+        for (Map.Entry<T, Set<T>> entry : forest.entrySet()) {
+            if (entry.getValue().contains(child)) {
+                set.add(entry.getKey());
+            }
+        }
+        return set;
     }
 
     @Override
