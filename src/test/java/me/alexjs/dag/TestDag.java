@@ -30,14 +30,14 @@ public class TestDag {
     }
 
     @Test
-    public void testTraversableForest() throws InterruptedException {
+    public void testForestTraversal() throws InterruptedException {
 
-        TraversableForest<Integer> dag = new TraversableForest<>();
+        Dag<Integer> dag = new SimpleForest<>();
         populateDag(dag);
 
         List<Integer> sorted = new LinkedList<>();
         ExecutorService executorService = Executors.newFixedThreadPool(3);
-        dag.traverse(i -> {
+        DagUtil.traverse(dag, i -> {
             synchronized (sorted) {
                 sorted.add(i);
             }
