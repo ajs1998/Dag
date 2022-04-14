@@ -17,10 +17,9 @@ public class TestDag {
     }
 
     @Test
-    public void testSimpleForest() {
+    public void testForest() {
 
-        Dag<Integer> dag = new SimpleForest<>();
-        populateDag(dag);
+        Dag<Integer> dag = populateDag();
 
         List<Integer> sorted = dag.topologicalSort();
         Collections.reverse(sorted);
@@ -32,8 +31,7 @@ public class TestDag {
     @Test
     public void testForestTraversal() throws InterruptedException {
 
-        Dag<Integer> dag = new SimpleForest<>();
-        populateDag(dag);
+        Dag<Integer> dag = populateDag();
 
         List<Integer> sorted = new LinkedList<>();
         ExecutorService executorService = Executors.newFixedThreadPool(3);
@@ -52,8 +50,7 @@ public class TestDag {
     @Test
     public void testExtremities() {
 
-        Dag<Integer> dag = new SimpleForest<>();
-        populateDag(dag);
+        Dag<Integer> dag = populateDag();
 
         Set<Integer> roots = dag.getRoots();
         for (Integer root : roots) {
@@ -70,8 +67,7 @@ public class TestDag {
     @Test
     public void testAncestry() {
 
-        Dag<Integer> dag = new SimpleForest<>();
-        populateDag(dag);
+        Dag<Integer> dag = populateDag();
 
         int node = getMiddleNode(dag);
 
@@ -94,7 +90,7 @@ public class TestDag {
     @Test
     public void testEmptyDag() {
 
-        Dag<Integer> dag = new SimpleForest<>();
+        Dag<Integer> dag = new Forest<>();
 
         Set<Integer> roots = dag.getRoots();
         Set<Integer> leaves = dag.getLeaves();
@@ -116,7 +112,7 @@ public class TestDag {
     public void testNoChildren() {
 
         // Test with put(0, null)
-        Dag<Integer> dag = new SimpleForest<>();
+        Dag<Integer> dag = new Forest<>();
         dag.put(0, null);
         Map<Integer, Set<Integer>> map = dag.asMap();
 
@@ -124,7 +120,7 @@ public class TestDag {
         Assertions.assertTrue(map.get(0).isEmpty());
 
         // Test with add(0)
-        dag = new SimpleForest<>();
+        dag = new Forest<>();
         dag.add(0);
         map = dag.asMap();
 
@@ -133,7 +129,8 @@ public class TestDag {
 
     }
 
-    private void populateDag(Dag<Integer> dag) {
+    private Dag<Integer> populateDag() {
+        Dag<Integer> dag = new Forest<>();
         int nodes = random.nextInt(5000) + 5000;
         for (int i = 0; i < nodes; i++) {
             // A parent will always be strictly less than its children to ensure no circular dependencies
@@ -141,6 +138,7 @@ public class TestDag {
             int child = parent + random.nextInt(500) + 1;
             dag.put(parent, child);
         }
+        return dag;
     }
 
     private void assertOrder(Dag<Integer> dag, List<Integer> sorted) {

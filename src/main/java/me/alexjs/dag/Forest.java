@@ -2,15 +2,15 @@ package me.alexjs.dag;
 
 import java.util.*;
 
-public class SimpleForest<T> implements Dag<T> {
+public class Forest<T> implements Dag<T> {
 
     private final Map<T, Set<T>> forest;
 
-    public SimpleForest() {
+    public Forest() {
         this.forest = new HashMap<>();
     }
 
-    public SimpleForest(Map<T, Set<T>> forest) {
+    public Forest(Map<T, Set<T>> forest) {
         this.forest = new HashMap<>();
         for (Map.Entry<T, Set<T>> entry : forest.entrySet()) {
             if (entry.getValue().isEmpty()) {
@@ -139,6 +139,19 @@ public class SimpleForest<T> implements Dag<T> {
         Map<T, Set<T>> copy = new HashMap<>();
         forest.forEach((key, value) -> copy.put(key, new HashSet<>(value)));
         return copy;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Forest<?> that = (Forest<?>) o;
+        return Objects.equals(forest, that.forest);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(forest);
     }
 
 }
