@@ -1,7 +1,6 @@
 package me.alexjs.dag;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SimpleForest<T> implements Dag<T> {
 
@@ -12,8 +11,10 @@ public class SimpleForest<T> implements Dag<T> {
     }
 
     @Override
-    public void add(T parent, T child) {
-        if (child != null) {
+    public void put(T parent, T child) {
+        if (child == null) {
+            add(parent);
+        } else {
             if (!forest.containsKey(parent)) {
                 Set<T> children = new HashSet<>();
                 children.add(child);
@@ -21,12 +22,13 @@ public class SimpleForest<T> implements Dag<T> {
             } else {
                 forest.get(parent).add(child);
             }
-            if (!forest.containsKey(child)) {
-                forest.put(child, new HashSet<>());
-            }
-        } else {
-            forest.putIfAbsent(parent, new HashSet<>());
+            add(child);
         }
+    }
+
+    @Override
+    public void add(T node) {
+        forest.putIfAbsent(node, new HashSet<>());
     }
 
     @Override

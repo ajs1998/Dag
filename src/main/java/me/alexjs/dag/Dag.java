@@ -14,13 +14,20 @@ public interface Dag<T> {
 
     /**
      * Add a parent-child relationship to the DAG. If either the parent or the child are not already in the graph, each
-     * will be added. If {@code child} is {@code null} then {@code parent} will be added to the graph with no change in
-     * its children
+     * will be added. If {@code child} is {@code null} then {@code parent} will be added to the graph and its children
+     * will be unaffected
      *
      * @param parent
      * @param child
      */
-    void add(T parent, T child);
+    void put(T parent, T child);
+
+    /**
+     * Adds a single node to the DAG. If the node is already in the graph, then its children will be unaffected
+     *
+     * @param node
+     */
+    void add(T node);
 
     /**
      * Order the nodes of this DAG such that all of a node's children come after it in the ordering

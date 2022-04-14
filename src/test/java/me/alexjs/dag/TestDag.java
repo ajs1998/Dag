@@ -112,13 +112,34 @@ public class TestDag {
 
     }
 
+    @Test
+    public void testNoChildren() {
+
+        // Test with put(0, null)
+        Dag<Integer> dag = new SimpleForest<>();
+        dag.put(0, null);
+        Map<Integer, Set<Integer>> map = dag.asMap();
+
+        Assertions.assertTrue(map.containsKey(0));
+        Assertions.assertTrue(map.get(0).isEmpty());
+
+        // Test with add(0)
+        dag = new SimpleForest<>();
+        dag.add(0);
+        map = dag.asMap();
+
+        Assertions.assertTrue(map.containsKey(0));
+        Assertions.assertTrue(map.get(0).isEmpty());
+
+    }
+
     private void populateDag(Dag<Integer> dag) {
         int nodes = random.nextInt(5000) + 5000;
         for (int i = 0; i < nodes; i++) {
             // A parent will always be strictly less than its children to ensure no circular dependencies
             int parent = random.nextInt(500);
             int child = parent + random.nextInt(500) + 1;
-            dag.add(parent, child);
+            dag.put(parent, child);
         }
     }
 
