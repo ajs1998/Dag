@@ -26,6 +26,10 @@ public class TestDag {
 
         assertOrder(dag, sorted);
 
+        // Test Forest's map constructor
+        Dag<Integer> dag2 = new Forest<>(dag.asMap());
+        Assertions.assertEquals(dag, dag2);
+
     }
 
     @Test
