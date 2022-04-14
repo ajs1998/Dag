@@ -10,6 +10,19 @@ public class SimpleForest<T> implements Dag<T> {
         this.forest = new HashMap<>();
     }
 
+    public SimpleForest(Map<T, Set<T>> forest) {
+        this.forest = new HashMap<>();
+        for (Map.Entry<T, Set<T>> entry : forest.entrySet()) {
+            if (entry.getValue().isEmpty()) {
+                add(entry.getKey());
+            } else {
+                for (T child : entry.getValue()) {
+                    put(entry.getKey(), child);
+                }
+            }
+        }
+    }
+
     @Override
     public void put(T parent, T child) {
         if (child == null) {
