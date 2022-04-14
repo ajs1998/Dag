@@ -13,15 +13,19 @@ public class SimpleForest<T> implements Dag<T> {
 
     @Override
     public void add(T parent, T child) {
-        if (!forest.containsKey(parent)) {
-            Set<T> children = new HashSet<>();
-            children.add(child);
-            forest.put(parent, children);
+        if (child != null) {
+            if (!forest.containsKey(parent)) {
+                Set<T> children = new HashSet<>();
+                children.add(child);
+                forest.put(parent, children);
+            } else {
+                forest.get(parent).add(child);
+            }
+            if (!forest.containsKey(child)) {
+                forest.put(child, new HashSet<>());
+            }
         } else {
-            forest.get(parent).add(child);
-        }
-        if (!forest.containsKey(child)) {
-            forest.put(child, new HashSet<>());
+            forest.putIfAbsent(parent, new HashSet<>());
         }
     }
 

@@ -14,7 +14,8 @@ public interface Dag<T> {
 
     /**
      * Add a parent-child relationship to the DAG. If either the parent or the child are not already in the graph, each
-     * will be added.
+     * will be added. If {@code child} is {@code null} then {@code parent} will be added to the graph with no change in
+     * its children
      *
      * @param parent
      * @param child
