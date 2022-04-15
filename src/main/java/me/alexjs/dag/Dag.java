@@ -1,5 +1,6 @@
 package me.alexjs.dag;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,12 +23,16 @@ public interface Dag<T> {
      */
     void put(T parent, T child);
 
+    void putAll(T parent, Collection<T> children);
+
     /**
      * Adds a single node to the DAG. If the node is already in the graph, then its children will be unaffected
      *
      * @param node
      */
     void add(T node);
+
+    void addAll(Collection<T> nodes);
 
     /**
      * Order the nodes of this DAG such that all of a node's children come after it in the ordering

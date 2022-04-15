@@ -40,8 +40,26 @@ public class Forest<T> implements Dag<T> {
     }
 
     @Override
+    public void putAll(T parent, Collection<T> children) {
+        if (!children.isEmpty()) {
+            for (T child : children) {
+                put(parent, child);
+            }
+        } else {
+            add(parent);
+        }
+    }
+
+    @Override
     public void add(T node) {
         forest.putIfAbsent(node, new HashSet<>());
+    }
+
+    @Override
+    public void addAll(Collection<T> nodes) {
+        for (T node : nodes) {
+            add(node);
+        }
     }
 
     @Override
