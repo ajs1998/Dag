@@ -49,9 +49,7 @@ public class DagUtil {
                 fn.accept(node);
             } catch (Throwable t) {
                 executorService.shutdownNow();
-                if (throwable.get() == null) {
-                    throwable.set(t);
-                }
+                throwable.compareAndSet(null, t);
                 return;
             }
             synchronized (forest) {
