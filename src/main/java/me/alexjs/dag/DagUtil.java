@@ -1,14 +1,15 @@
 package me.alexjs.dag;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class DagUtil {
 
-    public static <T> void traverse(Dag<T> dag, Consumer<T> fn, ExecutorService executorService) {
+    public static <T> void traverse(Dag<T> dag, Consumer<T> fn, ExecutorService executorService) throws Throwable {
 
         Map<T, Set<T>> copy = dag.asMap();
 
@@ -24,13 +25,18 @@ public class DagUtil {
             return;
         }
 
+        AtomicReference<Throwable> throwable = new AtomicReference<>();
         for (T node : leaves) {
-            visit(copy, fn, node, executorService);
+            try {
+                visit(copy, fn, node, executorService, throwable);
+            } catch (RejectedExecutionException ex) {
+                throw throwable.get();
+            }
         }
 
     }
 
-    private static <T> void visit(Map<T, Set<T>> forest, Consumer<T> fn, T node, ExecutorService executorService) {
+    private static <T> void visit(Map<T, Set<T>> forest, Consumer<T> fn, T node, ExecutorService executorService, AtomicReference<Throwable> throwable) throws Throwable {
 
         // If node has children, then it is not ready to be visited
         if (!forest.get(node).isEmpty()) {
@@ -39,14 +45,25 @@ public class DagUtil {
 
         // Apply fn to node, remove node from the forest, then visit its parent nodes
         executorService.submit(() -> {
-            fn.accept(node);
+            try {
+                fn.accept(node);
+            } catch (Throwable t) {
+                executorService.shutdownNow();
+                if (throwable.get() == null) {
+                    throwable.set(t);
+                }
+                return;
+            }
             synchronized (forest) {
                 forest.remove(node);
                 for (Map.Entry<T, Set<T>> e : forest.entrySet()) {
                     if (e.getValue().contains(node)) {
                         T parent = e.getKey();
                         forest.get(parent).remove(node);
-                        visit(forest, fn, parent, executorService);
+                        try {
+                            visit(forest, fn, parent, executorService, throwable);
+                        } catch (Throwable ignore) {
+                        }
                     }
                 }
                 if (forest.isEmpty()) {

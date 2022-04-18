@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.random.RandomGeneratorFactory;
+import java.util.stream.Collectors;
 
 public class TestDag {
 
@@ -33,12 +33,13 @@ public class TestDag {
     }
 
     @Test
-    public void testForestTraversal() throws InterruptedException {
+    public void testForestTraversal() throws Throwable {
 
         Dag<Integer> dag = populateDag();
 
-        List<Integer> sorted = new LinkedList<>();
         ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+        List<Integer> sorted = new LinkedList<>();
         DagUtil.traverse(dag, i -> {
             synchronized (sorted) {
                 sorted.add(i);
@@ -133,6 +134,32 @@ public class TestDag {
 
     }
 
+    @Test
+    public void testException() {
+
+        Dag<Integer> dag = populateDag();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+        String message = RandomGeneratorFactory.getDefault().create()
+                .ints(2)
+                .collect(StringBuilder::new, StringBuilder::append, (a, b) -> a.append(b.toString()))
+                .toString();
+
+        RuntimeException ex = new RuntimeException(message);
+        try {
+            DagUtil.traverse(dag, i -> {
+                throw ex;
+            }, executorService);
+        } catch (Throwable t) {
+            Assertions.assertEquals(ex, t);
+            return;
+        }
+
+        Assertions.fail();
+
+    }
+
     private Dag<Integer> populateDag() {
         Dag<Integer> dag = new Forest<>();
         int nodes = random.nextInt(5000) + 5000;
@@ -147,6 +174,7 @@ public class TestDag {
 
     private void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
         synchronized (sorted) {
+            Assertions.assertEquals(dag.asMap().keySet().size(), sorted.size());
             for (Integer parent : sorted) {
                 // If a parent comes after any of its children, then fail
                 dag.getChildren(parent).stream()
