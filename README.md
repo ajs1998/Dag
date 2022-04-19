@@ -1,8 +1,6 @@
 # A DAG in Java
 
-<hr>
-
-## How do I use it?
+## How do I get it?
 
 ### Gradle package from GitHub Packages
 
@@ -34,7 +32,7 @@ download GitHub Packages. The token only needs the `read:packages` permission to
 
 Coming soon
 
-## What does it do?
+## What can I do with it?
 
 ```java
 Dag<Integer> dag = new HashDag<>();
