@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        jdk: [ '11', '17' ]
+        jdk: [ '11', '16', '17', '18' ]
 
     steps:
       - uses: actions/checkout@v2
@@ -29,5 +29,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3.0.0
         with:
-          name: Test Results
+          name: Test Results (JDK ${{ matrix.jdk }})
           path: build/reports/tests/
