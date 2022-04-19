@@ -6,13 +6,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        jdk: [ '8', '11', '17' ]
+
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up JDK 11
+      - name: Set up JDK ${{ matrix.jdk }}
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: ${{ matrix.jdk }}
           distribution: 'temurin'
 
       - name: Validate Gradle wrapper
@@ -21,4 +25,9 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2.1.5
         with:
-          arguments: build
+          arguments: build --stacktrace
+
+      - uses: actions/upload-artifact@v3.0.0
+        with:
+          name: Test Results
+          path: build/reports/tests/
