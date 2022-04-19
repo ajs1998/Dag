@@ -35,49 +35,50 @@ Coming soon
 ## What can I do with it?
 
 ```java
-Dag<Integer> dag = new HashDag<>();
+Dag<String> dag = new HashDag<>();
 
 // Add nodes with (parent, child) relationships to the DAG 
-dag.put(0, 1);
-dag.put(2, 3);
+dag.put("Dorothy", "Shelby");
+dag.put("Shelby", "Alex");
+dag.put("Joe", "Alex");
 
 // Add individual nodes to the DAG
-dag.add(4);
-dag.add(5);
+dag.add("Clare");
+dag.add("Sarah");
 
 // Find a topologically sorted list of the nodes
-// Ex: [4, 5, 0, 2, 1, 3]
-List<Integer> sorted = dag.sort();
+// Ex: ["Sarah", "Clare", "Dorothy", "Joe", "Shelby", "Alex"]
+List<String> sorted = dag.sort();
 
 // Find the root nodes of the DAG
-// Ex: [0, 2, 4, 5]
-Set<Integer> roots= dag.getRoots();
+// Ex: ["Dorothy", "Joe", "Clare", "Sarah"]
+Set<String> roots= dag.getRoots();
 
 // Find the leaf nodes of the DAG
-// Ex: [1, 3, 4, 5]
-Set<Integer> leaves = dag.getLeaves();
+// Ex: ["Alex", "Clare", "Sarah"]
+Set<String> leaves = dag.getLeaves();
 
 // Find the parents of a node
-// Ex: [0]
-Set<Integer> parents = dag.getParents(1);
+// Ex: ["Joe", "Shelby"]
+Set<String> parents = dag.getParents("Alex");
 
 // Find the children of a node
-// Ex: [1]
-Set<Integer> children = dag.getChildren(0);
+// Ex: ["Shelby"]
+Set<String> children = dag.getChildren("Dorothy");
 
 // Find the ancestors of a node
-// Ex: [2]
-Set<Integer> ancestors = dag.getAncestors(3);
+// Ex: ["Joe", "Shelby", "Dorothy"]
+Set<String> ancestors = dag.getAncestors("Alex");
 
 // Find the descendants of a node
-// Ex: [3]
-Set<Integer> descendants = dag.getDescendants(2);
+// Ex: ["Shelby", "Alex"]
+Set<String> descendants = dag.getDescendants("Dorothy");
 
 // Get the Map representation of the DAG
-Map<Integer, Set<Integer>> map = dag.toMap();
+Map<String, Set<String>> map = dag.toMap();
 
 // Create a shallow copy
-Dag<Integer> copy = dag.clone();
+Dag<String> copy = dag.clone();
 ```
 
 ### DAG Traversal
