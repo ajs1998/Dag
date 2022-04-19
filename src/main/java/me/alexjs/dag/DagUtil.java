@@ -1,9 +1,9 @@
 package me.alexjs.dag;
 
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -11,35 +11,35 @@ public class DagUtil {
 
     public static <T> void traverse(Dag<T> dag, Consumer<T> fn, ExecutorService executorService) throws Throwable {
 
-        Map<T, Set<T>> copy = dag.asMap();
+        // Work with a clone so the original DAG structure is untouched
+        Dag<T> copy = dag.clone();
 
-        Set<T> leaves = new HashSet<>();
-        for (Map.Entry<T, Set<T>> entry : copy.entrySet()) {
-            if (entry.getValue().isEmpty()) {
-                leaves.add(entry.getKey());
-            }
-        }
+        // Get the leaves
+        Set<T> leaves = copy.getLeaves();
 
+        // If there are no leaves (empty DAG), then shutdown the ExecutorService and return
         if (leaves.isEmpty()) {
             executorService.shutdown();
             return;
         }
 
+        Map<T, Set<T>> dagMap = copy.asMap();
         AtomicReference<Throwable> throwable = new AtomicReference<>();
         for (T node : leaves) {
             try {
-                visit(copy, fn, node, executorService, throwable);
+                visit(dagMap, fn, node, executorService, throwable);
             } catch (RejectedExecutionException ex) {
+                // Throw the first exception that killed a worker instead of this RejectedExecutionException
                 throw throwable.get();
             }
         }
 
     }
 
-    private static <T> void visit(Map<T, Set<T>> forest, Consumer<T> fn, T node, ExecutorService executorService, AtomicReference<Throwable> throwable) throws Throwable {
+    private static <T> void visit(Map<T, Set<T>> dag, Consumer<T> fn, T node, ExecutorService executorService, AtomicReference<Throwable> throwable) {
 
         // If node has children, then it is not ready to be visited
-        if (!forest.get(node).isEmpty()) {
+        if (!dag.get(node).isEmpty()) {
             return;
         }
 
@@ -48,23 +48,21 @@ public class DagUtil {
             try {
                 fn.accept(node);
             } catch (Throwable t) {
+                // If this function fails, kill the ExecutorService and save the exception to rethrow later
                 executorService.shutdownNow();
                 throwable.compareAndSet(null, t);
                 return;
             }
-            synchronized (forest) {
-                forest.remove(node);
-                for (Map.Entry<T, Set<T>> e : forest.entrySet()) {
+            synchronized (dag) {
+                dag.remove(node);
+                for (Map.Entry<T, Set<T>> e : dag.entrySet()) {
                     if (e.getValue().contains(node)) {
                         T parent = e.getKey();
-                        forest.get(parent).remove(node);
-                        try {
-                            visit(forest, fn, parent, executorService, throwable);
-                        } catch (Throwable ignore) {
-                        }
+                        dag.get(parent).remove(node);
+                        visit(dag, fn, parent, executorService, throwable);
                     }
                 }
-                if (forest.isEmpty()) {
+                if (dag.isEmpty()) {
                     executorService.shutdown();
                 }
             }

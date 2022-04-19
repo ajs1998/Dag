@@ -12,15 +12,7 @@ public class Forest<T> implements Dag<T> {
 
     public Forest(Map<T, Set<T>> forest) {
         this.forest = new HashMap<>();
-        for (Map.Entry<T, Set<T>> entry : forest.entrySet()) {
-            if (entry.getValue().isEmpty()) {
-                add(entry.getKey());
-            } else {
-                for (T child : entry.getValue()) {
-                    put(entry.getKey(), child);
-                }
-            }
-        }
+        forest.forEach(this::putAll);
     }
 
     @Override
@@ -168,8 +160,8 @@ public class Forest<T> implements Dag<T> {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(forest);
+    public Dag<T> clone() {
+        return new Forest<>(forest);
     }
 
 }

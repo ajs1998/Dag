@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @param <T> The node type. It better have good {@code equals()} and {@code hashCode()} methods
  */
-public interface Dag<T> {
+public interface Dag<T> extends Cloneable {
 
     /**
      * Add a parent-child relationship to the DAG. If either the parent or the child are not already in the graph, each
@@ -37,7 +37,7 @@ public interface Dag<T> {
     /**
      * Order the nodes of this DAG such that all of a node's children come after it in the ordering
      *
-     * @return A topologically sorted list of nodes
+     * @return A topologically sorted list of nodes, or {@code null} if there's a circular dependency
      */
     List<T> topologicalSort();
 
@@ -52,6 +52,8 @@ public interface Dag<T> {
     Set<T> getParents(T child);
 
     Set<T> getChildren(T parent);
+
+    Dag<T> clone();
 
     Map<T, Set<T>> asMap();
 

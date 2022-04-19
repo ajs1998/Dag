@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.random.RandomGeneratorFactory;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class TestDag {
 
@@ -53,6 +55,25 @@ public class TestDag {
     }
 
     @Test
+    public void testCircularDependency() {
+
+        // This DAG is guaranteed to have no circular dependencies
+        Dag<Integer> dag = populateDag();
+
+        // Add a long circular dependencies
+        dag.put(0, 1);
+        dag.put(1, 2);
+        dag.put(2, 3);
+        dag.put(3, 4);
+        dag.put(4, 5);
+        dag.put(5, 6);
+        dag.put(6, 0);
+
+        Assertions.assertNull(dag.topologicalSort());
+
+    }
+
+    @Test
     public void testExtremities() {
 
         Dag<Integer> dag = populateDag();
@@ -93,7 +114,7 @@ public class TestDag {
     }
 
     @Test
-    public void testEmptyDag() {
+    public void testEmptyDag() throws Throwable {
 
         Dag<Integer> dag = new Forest<>();
 
@@ -110,6 +131,12 @@ public class TestDag {
         Assertions.assertTrue(descendants.isEmpty());
         Assertions.assertTrue(parents.isEmpty());
         Assertions.assertTrue(children.isEmpty());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+        DagUtil.traverse(dag, i -> Assertions.fail("This shouldn't happen"), executorService);
+
+        Assertions.assertTrue(executorService.isShutdown());
 
     }
 
@@ -141,8 +168,7 @@ public class TestDag {
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-        String message = RandomGeneratorFactory.getDefault().create()
-                .ints(2)
+        String message = RandomGeneratorFactory.getDefault().create().ints(2)
                 .collect(StringBuilder::new, StringBuilder::append, (a, b) -> a.append(b.toString()))
                 .toString();
 
@@ -161,6 +187,8 @@ public class TestDag {
     }
 
     private Dag<Integer> populateDag() {
+
+        // Add a ton of parent-child relationships. Many nodes will have multiple children
         Dag<Integer> dag = new Forest<>();
         int nodes = random.nextInt(5000) + 5000;
         for (int i = 0; i < nodes; i++) {
@@ -169,7 +197,15 @@ public class TestDag {
             int child = parent + random.nextInt(500) + 1;
             dag.put(parent, child);
         }
+
+        // Add some extra nodes that are guaranteed to have no parents or children
+        ArrayList<Integer> extra = IntStream.generate(() -> random.nextInt(1000, 2000))
+                .limit(100)
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        dag.addAll(extra);
+
         return dag;
+
     }
 
     private void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
@@ -177,9 +213,7 @@ public class TestDag {
             Assertions.assertEquals(dag.asMap().keySet().size(), sorted.size());
             for (Integer parent : sorted) {
                 // If a parent comes after any of its children, then fail
-                dag.getChildren(parent).stream()
-                        .filter(child -> sorted.indexOf(parent) <= sorted.indexOf(child))
-                        .forEach(i -> Assertions.fail());
+                dag.getChildren(parent).stream().filter(child -> sorted.indexOf(parent) <= sorted.indexOf(child)).forEach(i -> Assertions.fail());
             }
         }
     }
