@@ -149,7 +149,7 @@ public class TestDag {
     @Test
     public void testNoChildren() {
 
-        // Test with put(0, null)
+        // Test with putAll()
         Dag<Integer> dag = new HashDag<>();
         dag.putAll(0, new HashSet<>());
         Map<Integer, Set<Integer>> map = dag.asMap();
@@ -157,7 +157,7 @@ public class TestDag {
         Assertions.assertTrue(map.containsKey(0));
         Assertions.assertTrue(map.get(0).isEmpty());
 
-        // Test with add(0)
+        // Test with add()
         dag = new HashDag<>();
         dag.add(0);
         map = dag.asMap();
