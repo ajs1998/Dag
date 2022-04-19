@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * An implementation of {@link Dag<T>}. The underlying structure is a {@code HashMap<T, HashSet<T>>}.
+ * An implementation of {@link Dag}. The underlying structure is a {@code HashMap<T, HashSet<T>>}.
  *
  * @param <T> the node type
  */
