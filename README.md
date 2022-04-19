@@ -96,3 +96,5 @@ DagUtil.traverse(dag, i -> result.add(i), executorService);
 - Flexible `Dag<T>` interface so you can write your own implementation
 - 100% test coverage
 - 100% Javadoc coverage
+- I recommend using at least version `1.9`. Previous versions had little documentation, less test coverage, and fewer 
+  features
