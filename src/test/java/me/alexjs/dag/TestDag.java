@@ -199,7 +199,7 @@ public class TestDag {
         }
 
         // Add some extra nodes that are guaranteed to have no parents or children
-        ArrayList<Integer> extra = IntStream.generate(() -> random.nextInt(1000, 2000))
+        ArrayList<Integer> extra = IntStream.generate(() -> random.nextInt(2000) + 1000)
                 .limit(100)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         dag.addAll(extra);
