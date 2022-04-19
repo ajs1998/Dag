@@ -168,7 +168,7 @@ public class TestDag {
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-        String message = RandomGeneratorFactory.getDefault().create().ints(2)
+        String message = IntStream.generate(random::nextInt).limit(2)
                 .collect(StringBuilder::new, StringBuilder::append, (a, b) -> a.append(b.toString()))
                 .toString();
 
