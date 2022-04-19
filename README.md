@@ -2,7 +2,39 @@
 
 <hr>
 
-## How to use it
+## How do I use it?
+
+### Gradle package from GitHub Packages
+
+```gradle
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://maven.pkg.github.com/ajs1998/Dag')
+        credentials {
+            username = 'ajs1998'
+            // This is a PAT (Personal Access Token) that only has permission to read/download public GitHub Packages.
+            // This is not the actual password for the account.
+            password = {YOUR GITHUB PAT}
+        }
+    }
+}
+```
+
+```gradle
+dependencies {
+    implementation 'me.alexjs:dag:1.9'
+}
+```
+
+You need to <a href="https://github.com/settings/tokens">create a GitHub Personal Access Token (PAT)</a> to be able to
+download GitHub Packages. The token only needs the `read:packages` permission to work.
+
+### Maven Central package
+
+Coming soon
+
+## What does it do?
 
 ```java
 Dag<Integer> dag = new HashDag<>();
@@ -44,8 +76,25 @@ Set<Integer> ancestors = dag.getAncestors(3);
 Set<Integer> descendants = dag.getDescendants(2);
 
 // Get the Map representation of the DAG
-Map<Integer, Set<Integer>> map = dag.asMap();
+Map<Integer, Set<Integer>> map = dag.toMap();
 
 // Create a shallow copy
 Dag<Integer> copy = dag.clone();
 ```
+
+### DAG Traversal
+
+You can use `DagUtil.traverse()` to run a task on each node in multiple threads. Each node is only visited once all of
+its children have been visited. This is useful for running complex multithreaded pipelines on nodes with shared
+dependencies
+
+```java
+List<Integer> result = new LinkedList<>();
+DagUtil.traverse(dag, i -> result.add(i), executorService);
+```
+
+## Notes
+
+- Flexible `Dag<T>` interface so you can write your own implementation
+- 100% test coverage
+- 100% Javadoc coverage
