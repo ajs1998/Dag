@@ -105,7 +105,7 @@ public interface Dag<T> extends Cloneable {
      *
      * @return a map representation of this DAG
      */
-    Map<T, Set<T>> asMap();
+    Map<T, Set<T>> toMap();
 
     /**
      * Create a shallow copy of this DAG. Mutations to a node in the copy will result in mutations to the node in the

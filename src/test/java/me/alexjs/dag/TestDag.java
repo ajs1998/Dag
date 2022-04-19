@@ -35,7 +35,7 @@ public class TestDag {
         assertOrder(dag, sorted);
 
         // Test HashDag's map constructor
-        Dag<Integer> dag2 = new HashDag<>(dag.asMap());
+        Dag<Integer> dag2 = new HashDag<>(dag.toMap());
         Assertions.assertEquals(dag, dag2);
 
     }
@@ -152,7 +152,7 @@ public class TestDag {
         // Test with putAll()
         Dag<Integer> dag = new HashDag<>();
         dag.putAll(0, new HashSet<>());
-        Map<Integer, Set<Integer>> map = dag.asMap();
+        Map<Integer, Set<Integer>> map = dag.toMap();
 
         Assertions.assertTrue(map.containsKey(0));
         Assertions.assertTrue(map.get(0).isEmpty());
@@ -160,7 +160,7 @@ public class TestDag {
         // Test with add()
         dag = new HashDag<>();
         dag.add(0);
-        map = dag.asMap();
+        map = dag.toMap();
 
         Assertions.assertTrue(map.containsKey(0));
         Assertions.assertTrue(map.get(0).isEmpty());
@@ -216,7 +216,7 @@ public class TestDag {
 
     private void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
         synchronized (sorted) {
-            Assertions.assertEquals(dag.asMap().keySet().size(), sorted.size());
+            Assertions.assertEquals(dag.toMap().keySet().size(), sorted.size());
             for (Integer parent : sorted) {
                 // If a parent comes after any of its children, then fail
                 dag.getChildren(parent).stream().filter(child -> sorted.indexOf(parent) <= sorted.indexOf(child)).forEach(i -> Assertions.fail());

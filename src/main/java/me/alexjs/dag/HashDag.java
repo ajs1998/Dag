@@ -80,7 +80,7 @@ public class HashDag<T> implements Dag<T> {
         List<T> sorted = new LinkedList<>();
         Deque<T> s = new LinkedList<>(getRoots());
 
-        Map<T, Set<T>> copy = asMap();
+        Map<T, Set<T>> copy = toMap();
 
         while (!s.isEmpty()) {
             T n = s.pop();
@@ -162,7 +162,7 @@ public class HashDag<T> implements Dag<T> {
     }
 
     @Override
-    public Map<T, Set<T>> asMap() {
+    public Map<T, Set<T>> toMap() {
         Map<T, Set<T>> copy = new HashMap<>();
         map.forEach((key, value) -> copy.put(key, new HashSet<>(value)));
         return copy;

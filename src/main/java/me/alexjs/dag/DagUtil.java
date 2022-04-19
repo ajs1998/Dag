@@ -38,7 +38,7 @@ public class DagUtil {
             return;
         }
 
-        Map<T, Set<T>> dagMap = copy.asMap();
+        Map<T, Set<T>> dagMap = copy.toMap();
         AtomicReference<Exception> exception = new AtomicReference<>();
         for (T node : leaves) {
             try {
