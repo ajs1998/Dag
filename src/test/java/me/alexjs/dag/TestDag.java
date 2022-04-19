@@ -18,23 +18,23 @@ public class TestDag {
     }
 
     @Test
-    public void testForest() {
+    public void testSort() {
 
         Dag<Integer> dag = populateDag();
 
-        List<Integer> sorted = dag.topologicalSort();
+        List<Integer> sorted = dag.sort();
         Collections.reverse(sorted);
 
         assertOrder(dag, sorted);
 
-        // Test Forest's map constructor
-        Dag<Integer> dag2 = new Forest<>(dag.asMap());
+        // Test HashDag's map constructor
+        Dag<Integer> dag2 = new HashDag<>(dag.asMap());
         Assertions.assertEquals(dag, dag2);
 
     }
 
     @Test
-    public void testForestTraversal() throws Throwable {
+    public void testDagTraversal() throws Exception {
 
         Dag<Integer> dag = populateDag();
 
@@ -68,7 +68,7 @@ public class TestDag {
         dag.put(5, 6);
         dag.put(6, 0);
 
-        Assertions.assertNull(dag.topologicalSort());
+        Assertions.assertNull(dag.sort());
 
     }
 
@@ -113,9 +113,9 @@ public class TestDag {
     }
 
     @Test
-    public void testEmptyDag() throws Throwable {
+    public void testEmptyDag() throws Exception {
 
-        Dag<Integer> dag = new Forest<>();
+        Dag<Integer> dag = new HashDag<>();
 
         Set<Integer> roots = dag.getRoots();
         Set<Integer> leaves = dag.getLeaves();
@@ -143,15 +143,15 @@ public class TestDag {
     public void testNoChildren() {
 
         // Test with put(0, null)
-        Dag<Integer> dag = new Forest<>();
-        dag.put(0, null);
+        Dag<Integer> dag = new HashDag<>();
+        dag.putAll(0, new HashSet<>());
         Map<Integer, Set<Integer>> map = dag.asMap();
 
         Assertions.assertTrue(map.containsKey(0));
         Assertions.assertTrue(map.get(0).isEmpty());
 
         // Test with add(0)
-        dag = new Forest<>();
+        dag = new HashDag<>();
         dag.add(0);
         map = dag.asMap();
 
@@ -176,8 +176,8 @@ public class TestDag {
             DagUtil.traverse(dag, i -> {
                 throw ex;
             }, executorService);
-        } catch (Throwable t) {
-            Assertions.assertEquals(ex, t);
+        } catch (Exception e) {
+            Assertions.assertEquals(ex, e);
             return;
         }
 
@@ -188,7 +188,7 @@ public class TestDag {
     private Dag<Integer> populateDag() {
 
         // Add a ton of parent-child relationships. Many nodes will have multiple children
-        Dag<Integer> dag = new Forest<>();
+        Dag<Integer> dag = new HashDag<>();
         int nodes = random.nextInt(5000) + 5000;
         for (int i = 0; i < nodes; i++) {
             // A parent will always be strictly less than its children to ensure no circular dependencies

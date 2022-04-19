@@ -2,33 +2,42 @@ package me.alexjs.dag;
 
 import java.util.*;
 
-public class Forest<T> implements Dag<T> {
+/**
+ * An implementation of {@link Dag<T>}. The underlying structure is a {@code HashMap<T, HashSet<T>>}.
+ *
+ * @param <T> the node type
+ */
+public class HashDag<T> implements Dag<T> {
 
-    private final Map<T, Set<T>> forest;
+    private final Map<T, Set<T>> map;
 
-    public Forest() {
-        this.forest = new HashMap<>();
+    /**
+     * Construct an empty {@link HashDag}.
+     */
+    public HashDag() {
+        this.map = new HashMap<>();
     }
 
-    public Forest(Map<T, Set<T>> forest) {
-        this.forest = new HashMap<>();
-        forest.forEach(this::putAll);
+    /**
+     * Construct a DAG based on a {@link Map}. Each key of the map will be a node and each node's value will be the set
+     * of its children.
+     * @param map the
+     */
+    public HashDag(Map<T, Set<T>> map) {
+        this.map = new HashMap<>();
+        map.forEach(this::putAll);
     }
 
     @Override
     public void put(T parent, T child) {
-        if (child == null) {
-            add(parent);
+        if (!map.containsKey(parent)) {
+            Set<T> children = new HashSet<>();
+            children.add(child);
+            map.put(parent, children);
         } else {
-            if (!forest.containsKey(parent)) {
-                Set<T> children = new HashSet<>();
-                children.add(child);
-                forest.put(parent, children);
-            } else {
-                forest.get(parent).add(child);
-            }
-            add(child);
+            map.get(parent).add(child);
         }
+        add(child);
     }
 
     @Override
@@ -44,7 +53,7 @@ public class Forest<T> implements Dag<T> {
 
     @Override
     public void add(T node) {
-        forest.putIfAbsent(node, new HashSet<>());
+        map.putIfAbsent(node, new HashSet<>());
     }
 
     @Override
@@ -55,7 +64,7 @@ public class Forest<T> implements Dag<T> {
     }
 
     @Override
-    public List<T> topologicalSort() {
+    public List<T> sort() {
 
         // https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm
         // Great for running a task on these elements in a single thread
@@ -87,8 +96,8 @@ public class Forest<T> implements Dag<T> {
 
     @Override
     public Set<T> getRoots() {
-        Set<T> roots = new HashSet<>(forest.keySet());
-        for (Set<T> children : forest.values()) {
+        Set<T> roots = new HashSet<>(map.keySet());
+        for (Set<T> children : map.values()) {
             roots.removeAll(children);
         }
         return roots;
@@ -97,7 +106,7 @@ public class Forest<T> implements Dag<T> {
     @Override
     public Set<T> getLeaves() {
         Set<T> leaves = new HashSet<>();
-        for (Map.Entry<T, Set<T>> entry : forest.entrySet()) {
+        for (Map.Entry<T, Set<T>> entry : map.entrySet()) {
             if (entry.getValue().isEmpty()) {
                 leaves.add(entry.getKey());
             }
@@ -124,10 +133,10 @@ public class Forest<T> implements Dag<T> {
     }
 
     @Override
-    public Set<T> getParents(T child) {
+    public Set<T> getParents(T node) {
         Set<T> set = new HashSet<>();
-        for (Map.Entry<T, Set<T>> entry : forest.entrySet()) {
-            if (entry.getValue().contains(child)) {
+        for (Map.Entry<T, Set<T>> entry : map.entrySet()) {
+            if (entry.getValue().contains(node)) {
                 set.add(entry.getKey());
             }
         }
@@ -135,8 +144,8 @@ public class Forest<T> implements Dag<T> {
     }
 
     @Override
-    public Set<T> getChildren(T parent) {
-        Set<T> children = forest.get(parent);
+    public Set<T> getChildren(T node) {
+        Set<T> children = map.get(node);
         if (children == null) {
             return new HashSet<>();
         } else {
@@ -147,7 +156,7 @@ public class Forest<T> implements Dag<T> {
     @Override
     public Map<T, Set<T>> asMap() {
         Map<T, Set<T>> copy = new HashMap<>();
-        forest.forEach((key, value) -> copy.put(key, new HashSet<>(value)));
+        map.forEach((key, value) -> copy.put(key, new HashSet<>(value)));
         return copy;
     }
 
@@ -155,13 +164,13 @@ public class Forest<T> implements Dag<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Forest<?> that = (Forest<?>) o;
-        return Objects.equals(forest, that.forest);
+        HashDag<?> that = (HashDag<?>) o;
+        return Objects.equals(map, that.map);
     }
 
     @Override
     public Dag<T> clone() {
-        return new Forest<>(forest);
+        return new HashDag<>(map);
     }
 
 }
