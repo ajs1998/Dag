@@ -123,24 +123,6 @@ public class HashDag<T> implements Dag<T> {
     }
 
     @Override
-    public Set<T> getAncestors(T node) {
-        Set<T> ancestors = getParents(node);
-        for (T ancestor : new HashSet<>(ancestors)) {
-            ancestors.addAll(getAncestors(ancestor));
-        }
-        return ancestors;
-    }
-
-    @Override
-    public Set<T> getDescendants(T node) {
-        Set<T> descendants = getChildren(node);
-        for (T descendant : new HashSet<>(descendants)) {
-            descendants.addAll(getDescendants(descendant));
-        }
-        return descendants;
-    }
-
-    @Override
     public Set<T> getParents(T node) {
         Set<T> set = new HashSet<>();
         for (Map.Entry<T, Set<T>> entry : map.entrySet()) {
@@ -159,6 +141,24 @@ public class HashDag<T> implements Dag<T> {
         } else {
             return new HashSet<>(children);
         }
+    }
+
+    @Override
+    public Set<T> getAncestors(T node) {
+        Set<T> ancestors = getParents(node);
+        for (T ancestor : new HashSet<>(ancestors)) {
+            ancestors.addAll(getAncestors(ancestor));
+        }
+        return ancestors;
+    }
+
+    @Override
+    public Set<T> getDescendants(T node) {
+        Set<T> descendants = getChildren(node);
+        for (T descendant : new HashSet<>(descendants)) {
+            descendants.addAll(getDescendants(descendant));
+        }
+        return descendants;
     }
 
     @Override

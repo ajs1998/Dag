@@ -68,22 +68,6 @@ public interface Dag<T> extends Cloneable {
     Set<T> getLeaves();
 
     /**
-     * Get the ancestor nodes of a given node.
-     *
-     * @param node the node
-     * @return the ancestor nodes of the given node
-     */
-    Set<T> getAncestors(T node);
-
-    /**
-     * Get the descendant nodes of a given node.
-     *
-     * @param node the node
-     * @return the descendant nodes of the given node
-     */
-    Set<T> getDescendants(T node);
-
-    /**
      * Get the parents of a given node.
      *
      * @param node the node
@@ -100,12 +84,20 @@ public interface Dag<T> extends Cloneable {
     Set<T> getChildren(T node);
 
     /**
-     * Create a shallow copy of this DAG. Mutations to a node in the copy will result in mutations to the node in the
-     * original DAG.
+     * Get the ancestor nodes of a given node.
      *
-     * @return a shallow copy of this DAG
+     * @param node the node
+     * @return the ancestor nodes of the given node
      */
-    Dag<T> clone();
+    Set<T> getAncestors(T node);
+
+    /**
+     * Get the descendant nodes of a given node.
+     *
+     * @param node the node
+     * @return the descendant nodes of the given node
+     */
+    Set<T> getDescendants(T node);
 
     /**
      * Create a {@link Map} representation of this DAG. Each node will be a key of the map and the set of children of
@@ -114,5 +106,13 @@ public interface Dag<T> extends Cloneable {
      * @return a map representation of this DAG
      */
     Map<T, Set<T>> asMap();
+
+    /**
+     * Create a shallow copy of this DAG. Mutations to a node in the copy will result in mutations to the node in the
+     * original DAG.
+     *
+     * @return a shallow copy of this DAG
+     */
+    Dag<T> clone();
 
 }
