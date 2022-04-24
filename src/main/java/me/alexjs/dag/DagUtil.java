@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 /**
  * Helper class for interacting with a DAG
@@ -24,7 +23,7 @@ public class DagUtil {
      * @param <T>             the type of DAG to traverse
      * @throws Exception the first exception thrown by {@code function}, if any
      */
-    public static <T> void traverse(Dag<T> dag, Consumer<T> function, ExecutorService executorService) throws Exception {
+    public static <T> void traverse(Dag<T> dag, FailableConsumer<T> function, ExecutorService executorService) throws Throwable {
 
         // Work with a clone so the original DAG structure is untouched
         Dag<T> copy = dag.clone();
@@ -39,7 +38,7 @@ public class DagUtil {
         }
 
         Map<T, Set<T>> dagMap = copy.toMap();
-        AtomicReference<Exception> exception = new AtomicReference<>();
+        AtomicReference<Throwable> exception = new AtomicReference<>();
         for (T node : leaves) {
             try {
                 visit(dagMap, function, node, executorService, exception);
@@ -51,7 +50,7 @@ public class DagUtil {
 
     }
 
-    private static <T> void visit(Map<T, Set<T>> dag, Consumer<T> fn, T node, ExecutorService executorService, AtomicReference<Exception> exception) {
+    private static <T> void visit(Map<T, Set<T>> dag, FailableConsumer<T> fn, T node, ExecutorService executorService, AtomicReference<Throwable> throwable) {
 
         // If node has children, then it is not ready to be visited
         if (!dag.get(node).isEmpty()) {
@@ -62,10 +61,10 @@ public class DagUtil {
         executorService.submit(() -> {
             try {
                 fn.accept(node);
-            } catch (Exception e) {
+            } catch (Throwable t) {
                 // If this function fails, kill the ExecutorService and save the exception to rethrow later
-                executorService.shutdownNow();
-                exception.compareAndSet(null, e);
+                executorService.shutdown();
+                throwable.compareAndSet(null, t);
                 return;
             }
             synchronized (dag) {
@@ -74,7 +73,7 @@ public class DagUtil {
                     if (e.getValue().contains(node)) {
                         T parent = e.getKey();
                         dag.get(parent).remove(node);
-                        visit(dag, fn, parent, executorService, exception);
+                        visit(dag, fn, parent, executorService, throwable);
                     }
                 }
                 if (dag.isEmpty()) {

@@ -41,7 +41,7 @@ public class TestDag {
     }
 
     @Test
-    public void testDagTraversal() throws Exception {
+    public void testDagTraversal() throws Throwable {
 
         Dag<Integer> dag = populateDag();
 
@@ -120,7 +120,7 @@ public class TestDag {
     }
 
     @Test
-    public void testEmptyDag() throws Exception {
+    public void testEmptyDag() throws Throwable {
 
         Dag<Integer> dag = new HashDag<>();
 
@@ -178,13 +178,13 @@ public class TestDag {
                 .collect(StringBuilder::new, StringBuilder::append, (a, b) -> a.append(b.toString()))
                 .toString();
 
-        RuntimeException ex = new RuntimeException(message);
+        Throwable throwable = new Error(message);
         try {
             DagUtil.traverse(dag, i -> {
-                throw ex;
+                throw throwable;
             }, executorService);
-        } catch (Exception e) {
-            Assertions.assertEquals(ex, e);
+        } catch (Throwable t) {
+            Assertions.assertEquals(throwable, t);
             return;
         }
 
