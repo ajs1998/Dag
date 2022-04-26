@@ -1,83 +1,91 @@
-# A DAG in Java
+# A `Dag` in Java
 
-## How do I get it?
-
-### Gradle package from GitHub Packages
-
-```gradle
-repositories {
-    mavenCentral()
-    maven {
-        url = uri('https://maven.pkg.github.com/ajs1998/Dag')
-        credentials {
-            username = 'ajs1998'
-            // This is a PAT (Personal Access Token) that only has permission to read/download public GitHub Packages.
-            // This is not the actual password for the account.
-            password = {YOUR GITHUB PAT}
-        }
-    }
-}
-```
-
-```gradle
-dependencies {
-    implementation 'me.alexjs:dag:1.10'
-}
-```
-
-You need to <a href="https://github.com/settings/tokens">create a GitHub Personal Access Token (PAT)</a> to be able to
-download GitHub Packages. The token only needs the `read:packages` permission to work.
-
-### Maven Central package
-
-Coming soon
+## What is it?
 
 ## What can I do with it?
+
+### Add nodes with (parent, child) relationships to the DAG
 
 ```java
 Dag<String> dag = new HashDag<>();
 
-// Add nodes with (parent, child) relationships to the DAG 
 dag.put("Dorothy", "Shelby");
 dag.put("Shelby", "Alex");
 dag.put("Joe", "Alex");
+```
 
-// Add individual nodes to the DAG
+### Add individual nodes to the DAG
+
+```java
 dag.add("Clare");
 dag.add("Sarah");
+```
 
-// Find a topologically sorted list of the nodes
-// Ex: ["Sarah", "Clare", "Dorothy", "Joe", "Shelby", "Alex"]
+### Find a topologically sorted list of the nodes
+
+```java
 List<String> sorted = dag.sort();
+```
 
-// Find the root nodes of the DAG
-// Ex: ["Dorothy", "Joe", "Clare", "Sarah"]
-Set<String> roots= dag.getRoots();
+> `["Sarah", "Clare", "Dorothy", "Joe", "Shelby", "Alex"]`
 
-// Find the leaf nodes of the DAG
-// Ex: ["Alex", "Clare", "Sarah"]
+### Find the root nodes of the DAG
+
+```java
+Set<String> roots = dag.getRoots();
+```
+
+> `["Dorothy", "Joe", "Clare", "Sarah"]`
+
+### Find the leaf nodes of the DAG
+
+```java
 Set<String> leaves = dag.getLeaves();
+```
 
-// Find the parents of a node
-// Ex: ["Joe", "Shelby"]
+> `["Alex", "Clare", "Sarah"]`
+
+### Find the parents of a node
+
+```java
 Set<String> parents = dag.getParents("Alex");
+```
 
-// Find the children of a node
-// Ex: ["Shelby"]
+> `["Joe", "Shelby"]`
+
+### Find the children of a node
+
+```java
 Set<String> children = dag.getChildren("Dorothy");
+```
 
-// Find the ancestors of a node
-// Ex: ["Joe", "Shelby", "Dorothy"]
+> `["Shelby"]`
+
+### Find the ancestors of a node
+
+```java
 Set<String> ancestors = dag.getAncestors("Alex");
+```
 
-// Find the descendants of a node
-// Ex: ["Shelby", "Alex"]
+> `["Joe", "Shelby", "Dorothy"]`
+
+### Find the descendants of a node
+
+```java
 Set<String> descendants = dag.getDescendants("Dorothy");
+```
 
-// Get the Map representation of the DAG
+> `["Shelby", "Alex"]`
+
+### Get the Map representation of the DAG
+
+```java
 Map<String, Set<String>> map = dag.toMap();
+```
 
-// Create a shallow copy
+### Create a shallow copy
+
+```java
 Dag<String> copy = dag.clone();
 ```
 
@@ -92,10 +100,40 @@ List<Integer> result = new LinkedList<>();
 DagUtil.traverse(dag, i -> result.add(i), executorService);
 ```
 
+## How do I get it?
+
+### Gradle package from GitHub Packages
+
+```gradle
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://maven.pkg.github.com/ajs1998/Dag')
+        credentials {
+            username = {YOUR GITHUB USERNAME}
+            // This is a PAT (Personal Access Token) that only has permission to read/download public GitHub Packages.
+            // This is not the actual password for the account.
+            password = {YOUR GITHUB PAT}
+        }
+    }
+}
+```
+
+```gradle
+dependencies {
+    implementation 'me.alexjs:dag:1.0.0'
+}
+```
+
+You need to <a href="https://github.com/settings/tokens">create a GitHub Personal Access Token (PAT)</a> to be able to
+download GitHub Packages. The token only needs the `read:packages` permission to work.
+
+### Maven Central package
+
+Coming soon
+
 ## Notes
 
 - Flexible `Dag<T>` interface so you can write your own implementation
 - 100% test coverage
 - 100% Javadoc coverage
-- I recommend using at least version `1.10`. Previous versions had little documentation, less test coverage, and fewer 
-  features
