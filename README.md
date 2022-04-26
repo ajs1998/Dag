@@ -1,91 +1,51 @@
-# A `Dag` in Java
-
-## What is it?
+# A DAG in Java
 
 ## What can I do with it?
-
-### Add nodes with (parent, child) relationships to the DAG
 
 ```java
 Dag<String> dag = new HashDag<>();
 
+// Add nodes with (parent, child) relationships to the DAG 
 dag.put("Dorothy", "Shelby");
 dag.put("Shelby", "Alex");
 dag.put("Joe", "Alex");
-```
 
-### Add individual nodes to the DAG
-
-```java
+// Add individual nodes to the DAG
 dag.add("Clare");
 dag.add("Sarah");
-```
 
-### Find a topologically sorted list of the nodes
-
-```java
+// Find a topologically sorted list of the nodes
+// Ex: ["Sarah", "Clare", "Dorothy", "Joe", "Shelby", "Alex"]
 List<String> sorted = dag.sort();
-```
 
-> `["Sarah", "Clare", "Dorothy", "Joe", "Shelby", "Alex"]`
+// Find the root nodes of the DAG
+// Ex: ["Dorothy", "Joe", "Clare", "Sarah"]
+Set<String> roots= dag.getRoots();
 
-### Find the root nodes of the DAG
-
-```java
-Set<String> roots = dag.getRoots();
-```
-
-> `["Dorothy", "Joe", "Clare", "Sarah"]`
-
-### Find the leaf nodes of the DAG
-
-```java
+// Find the leaf nodes of the DAG
+// Ex: ["Alex", "Clare", "Sarah"]
 Set<String> leaves = dag.getLeaves();
-```
 
-> `["Alex", "Clare", "Sarah"]`
-
-### Find the parents of a node
-
-```java
+// Find the parents of a node
+// Ex: ["Joe", "Shelby"]
 Set<String> parents = dag.getParents("Alex");
-```
 
-> `["Joe", "Shelby"]`
-
-### Find the children of a node
-
-```java
+// Find the children of a node
+// Ex: ["Shelby"]
 Set<String> children = dag.getChildren("Dorothy");
-```
 
-> `["Shelby"]`
-
-### Find the ancestors of a node
-
-```java
+// Find the ancestors of a node
+// Ex: ["Joe", "Shelby", "Dorothy"]
 Set<String> ancestors = dag.getAncestors("Alex");
-```
 
-> `["Joe", "Shelby", "Dorothy"]`
-
-### Find the descendants of a node
-
-```java
+// Find the descendants of a node
+// Ex: ["Shelby", "Alex"]
 Set<String> descendants = dag.getDescendants("Dorothy");
-```
 
-> `["Shelby", "Alex"]`
-
-### Get the Map representation of the DAG
-
-```java
+// Get the Map representation of the DAG
 Map<String, Set<String>> map = dag.toMap();
-```
 
-### Create a shallow copy
-
-```java
+// Create a shallow copy
 Dag<String> copy = dag.clone();
 ```
 
@@ -110,7 +70,7 @@ repositories {
     maven {
         url = uri('https://maven.pkg.github.com/ajs1998/Dag')
         credentials {
-            username = {YOUR GITHUB USERNAME}
+            username = 'ajs1998'
             // This is a PAT (Personal Access Token) that only has permission to read/download public GitHub Packages.
             // This is not the actual password for the account.
             password = {YOUR GITHUB PAT}
@@ -121,7 +81,7 @@ repositories {
 
 ```gradle
 dependencies {
-    implementation 'me.alexjs:dag:1.0.0'
+    implementation 'me.alexjs:dag:1.10'
 }
 ```
 
