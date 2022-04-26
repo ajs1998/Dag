@@ -1,6 +1,12 @@
 # A DAG in Java
 
+## What is it?
+
+
+
 ## What can I do with it?
+
+### Simple DAG operations
 
 ```java
 Dag<String> dag = new HashDag<>();
@@ -70,7 +76,7 @@ repositories {
     maven {
         url = uri('https://maven.pkg.github.com/ajs1998/Dag')
         credentials {
-            username = 'ajs1998'
+            username = {YOUR GITHUB PAT}
             // This is a PAT (Personal Access Token) that only has permission to read/download public GitHub Packages.
             // This is not the actual password for the account.
             password = {YOUR GITHUB PAT}
@@ -81,7 +87,7 @@ repositories {
 
 ```gradle
 dependencies {
-    implementation 'me.alexjs:dag:1.10'
+    implementation 'me.alexjs:dag:1.0.0'
 }
 ```
 
