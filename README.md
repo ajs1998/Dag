@@ -2,7 +2,9 @@
 
 ## What is it?
 
-
+It's a simple library for creating an interacting with a directed acyclic graph structure in Java.
+It includes a `Dag<T>` interface so you can provide your own implementation.
+`HashDag<T>` is a helpful implementation of `Dag<T>` where the underlying structure is `HashMap<T, HashSet<T>>`.
 
 ## What can I do with it?
 
