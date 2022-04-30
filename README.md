@@ -105,3 +105,5 @@ Coming soon
 - Flexible `Dag<T>` interface so you can write your own implementation
 - 100% test coverage
 - 100% Javadoc coverage
+
+[![CI](https://github.com/ajs1998/Dag/actions/workflows/test.yml/badge.svg)](https://github.com/ajs1998/Dag/actions/workflows/test.yml)
