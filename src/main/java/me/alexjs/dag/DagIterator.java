@@ -25,7 +25,7 @@ public class DagIterator<T> implements Iterator<T> {
     private boolean hasNext;
 
     /**
-     * Create a new {@link DagIterator} for a given {@link Dag}
+     * Create a new {@link DagIterator} for a given {@link Dag}.
      * <p>
      * This iterator will return each node such that {@link DagIterator#pushParents} has already been called for all of
      * its children nodes.
@@ -91,6 +91,7 @@ public class DagIterator<T> implements Iterator<T> {
 
     /**
      * TODO
+     *
      * @param child
      */
     public void pushParents(T child) {

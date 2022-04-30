@@ -52,12 +52,12 @@ public class HashDag<T> implements Dag<T> {
     /**
      * Returns {@literal true} if this DAG contains the specified node.
      *
-     * @param o element whose presence in this collection is to be tested
+     * @param node the node whose presence in this DAG is to be tested
      * @return {@literal true} if this DAG contains the specified node
      */
     @Override
-    public boolean contains(Object o) {
-        return map.containsKey(o);
+    public boolean contains(Object node) {
+        return map.containsKey(node);
     }
 
     /**
@@ -83,8 +83,8 @@ public class HashDag<T> implements Dag<T> {
     /**
      * Returns an array containing all the nodes in this DAG.
      *
-     * @param array the array into which the elements of this collection are to be stored,
-     *              if it is big enough; otherwise, a new array of the same runtime type is allocated for this purpose.
+     * @param array the array into which the nodes of this DAG are to be stored if it is big enough;
+     *              otherwise, a new array of the same runtime type is allocated for this purpose.
      * @param <A>   the type of the array to create
      * @return an array containing all the nodes in this DAG
      */
@@ -109,7 +109,7 @@ public class HashDag<T> implements Dag<T> {
      * Remove a node from this DAG.
      * This will also remove the node from all its parents' collections of children.
      *
-     * @param node element to be removed from this collection, if present
+     * @param node the node to be removed from this DAG, if present
      * @return {@literal true} if a node was removed as a result of the call
      */
     @Override
@@ -127,18 +127,18 @@ public class HashDag<T> implements Dag<T> {
     /**
      * Returns {@literal true} if this DAG contains all the elements in the specified collection.
      *
-     * @param c collection to be checked for containment in this collection
+     * @param collection the collection to be checked for containment in this collection
      * @return {@literal true} if this DAG contains all the elements in the specified collection
      */
     @Override
-    public boolean containsAll(Collection<?> c) {
+    public boolean containsAll(Collection<?> collection) {
         return false;
     }
 
     /**
      * Add all the nodes in the specified collection to this DAG.
      *
-     * @param nodes collection containing elements to be added to this collection
+     * @param nodes the collection containing the nodes to be added to this DAG
      */
     @Override
     public boolean addAll(Collection<? extends T> nodes) {
@@ -153,10 +153,9 @@ public class HashDag<T> implements Dag<T> {
     /**
      * Removes all the nodes from this DAG that are also contained in the specified collection.
      *
-     * @param nodes collection containing elements to be removed from this collection
+     * @param nodes the collection containing elements to be removed from this collection
      * @return {@literal true} if this DAG changed as a result of the call
      */
-    // Removes a bunch of nodes
     @Override
     public boolean removeAll(Collection<?> nodes) {
         for (Object node : nodes) {
@@ -170,13 +169,19 @@ public class HashDag<T> implements Dag<T> {
     /**
      * Retains only the nodes in this DAG that are also contained in the specified collection.
      *
-     * @param c collection containing elements to be retained in this collection
+     * @param collection the collection containing the nodes to be retained in this DAG
      * @return {@literal true} if this collection changed as a result of the call
      */
     @Override
-    public boolean retainAll(Collection<?> c) {
-        // TODO
-        return false;
+    public boolean retainAll(Collection<?> collection) {
+        boolean changed = false;
+        for (T node : map.keySet()) {
+            if (!collection.contains(node)) {
+                remove(node);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     /**
@@ -184,13 +189,13 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public void clear() {
-
+        map.clear();
     }
 
     /**
      * TODO
      *
-     * @param o object to be compared for equality with this collection
+     * @param o the object to be compared for equality with this DAG
      * @return
      */
     @Override
