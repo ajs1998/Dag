@@ -25,22 +25,6 @@ public class TestDag {
 
     }
 
-    @Test
-    public void testSort() {
-
-        Dag<Integer> dag = populateDag();
-
-        List<Integer> sorted = dag.sort();
-        Collections.reverse(sorted);
-
-        assertOrder(dag, sorted);
-
-        // Bonus: test HashDag's map constructor
-        Dag<Integer> dag2 = new HashDag<>(dag.toMap());
-        Assertions.assertEquals(dag, dag2);
-
-    }
-
     // TODO Remove this comment
     @Disabled
     @Test
@@ -68,12 +52,24 @@ public class TestDag {
     }
 
     @Test
+    public void testSort() {
+
+        Dag<Integer> dag = populateDag();
+
+        List<Integer> sorted = dag.sort();
+        Collections.reverse(sorted);
+
+        assertOrder(dag, sorted);
+
+    }
+
+    @Test
     public void testCircularDependency() {
 
         // This DAG is guaranteed to have no circular dependencies
         Dag<Integer> dag = populateDag();
 
-        // Add a long circular dependencies
+        // Add a long chain of circular dependencies
         dag.put(0, 1);
         dag.put(1, 2);
         dag.put(2, 3);
@@ -182,6 +178,92 @@ public class TestDag {
 
     }
 
+
+    /* Tests for Collection<T> methods */
+
+    @Test
+    public void testRemoveAndRetain() {
+
+        Dag<Integer> dag = new HashDag<>();
+
+        Assertions.assertFalse(dag.remove(0));
+        Assertions.assertFalse(dag.removeAll(List.of(1, 2, 3)));
+        Assertions.assertFalse(dag.retainAll(List.of(4, 5, 6)));
+
+        dag.add(1);
+        Assertions.assertTrue(dag.remove(1));
+        Assertions.assertTrue(dag.isEmpty());
+
+        dag.put(2, 3);
+        dag.put(2, 4);
+        Assertions.assertTrue(dag.removeAll(List.of(2, 3, 4)));
+        Assertions.assertTrue(dag.isEmpty());
+
+        dag.put(5, 6);
+        dag.put(7, 6);
+        Assertions.assertTrue(dag.removeAll(List.of(5, 6, 7)));
+        Assertions.assertTrue(dag.isEmpty());
+
+        dag.put(10, 11);
+        dag.put(10, 12);
+        dag.put(13, 14);
+        dag.put(15, 14);
+        Assertions.assertEquals(2, dag.getChildren(10).size());
+        Assertions.assertEquals(2, dag.getParents(14).size());
+
+        Assertions.assertTrue(dag.retainAll(List.of(10, 14)));
+        Assertions.assertEquals(0, dag.getChildren(10).size());
+        Assertions.assertEquals(0, dag.getParents(14).size());
+
+    }
+
+    @Test
+    public void testSize() {
+
+        Dag<Integer> dag = populateDag();
+
+        Assertions.assertTrue(dag.size() > 0);
+        Assertions.assertFalse(dag.isEmpty());
+
+        dag.clear();
+
+        Assertions.assertEquals(0, dag.size());
+        Assertions.assertTrue(dag.isEmpty());
+
+    }
+
+    @Test
+    public void testClone() {
+
+        Dag<Integer> dag = populateDag();
+        Dag<Integer> clone = dag.clone();
+
+        // Make sure they do not reference the same object
+        Assertions.assertNotSame(clone, dag);
+
+        // Make sure their class is the same
+        Assertions.assertSame(clone.getClass(), dag.getClass());
+
+        // Make sure their contents are equivalent
+        Assertions.assertEquals(clone, dag);
+        Assertions.assertEquals(clone.hashCode(), dag.hashCode());
+
+        // Modify the original, then make sure that their contents are not equivalent anymore
+        dag.add(Integer.MAX_VALUE);
+        Assertions.assertTrue(dag.contains(Integer.MAX_VALUE));
+        Assertions.assertTrue(dag.containsAll(clone.getNodes()));
+        Assertions.assertNotEquals(clone, dag);
+        Assertions.assertNotEquals(clone.hashCode(), dag.hashCode());
+
+        // Bonus: test HashDag's map constructor
+        Dag<Integer> copy = new HashDag<>(dag.toMap());
+        Assertions.assertEquals(copy, dag);
+        Assertions.assertSame(copy.getClass(), dag.getClass());
+        Assertions.assertEquals(copy, dag);
+        Assertions.assertEquals(copy.hashCode(), dag.hashCode());
+
+    }
+
     private Dag<Integer> populateDag() {
 
         // Add a ton of parent-child relationships. Many nodes will have multiple children
@@ -225,7 +307,7 @@ public class TestDag {
 
     private void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
         synchronized (sorted) {
-            Assertions.assertEquals(dag.toMap().keySet().size(), sorted.size());
+            Assertions.assertEquals(dag.getNodes().size(), sorted.size());
             for (Integer parent : sorted) {
                 // If a parent comes after any of its children, then fail
                 dag.getChildren(parent).stream()

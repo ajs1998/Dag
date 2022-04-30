@@ -8,7 +8,6 @@ import java.util.Set;
 
 /**
  * A Directed Acyclic Graph.
- * A node may have any number of parents and children, and the graph may have any number of roots and leaves.
  *
  * @param <T> The node type
  */
@@ -85,6 +84,13 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @return the descendant nodes of the given node
      */
     Set<T> getDescendants(T node);
+
+    /**
+     * Get the full set of nodes this DAG contains.
+     *
+     * @return the nodes this DAG contains
+     */
+    Set<T> getNodes();
 
     /**
      * Create a {@link Map} representation of this DAG.

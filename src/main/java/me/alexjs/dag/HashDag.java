@@ -187,13 +187,21 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public boolean retainAll(Collection<?> collection) {
-        boolean changed = false;
+        // Collect the nodes to be removed
+        List<T> remove = new ArrayList<>();
         for (T node : map.keySet()) {
             if (!collection.contains(node)) {
-                remove(node);
-                changed = true;
+                remove.add(node);
             }
         }
+
+        // Remove them
+        boolean changed = false;
+        for (T node : remove) {
+            remove(node);
+            changed = true;
+        }
+
         return changed;
     }
 
@@ -294,10 +302,8 @@ public class HashDag<T> implements Dag<T> {
             }
         }
 
-        for (Collection<T> children : copy.values()) {
-            if (!children.isEmpty()) {
-                return null;
-            }
+        if (!copy.isEmpty()) {
+            return null;
         }
 
         return sorted;
@@ -361,6 +367,11 @@ public class HashDag<T> implements Dag<T> {
             descendants.addAll(getDescendants(descendant));
         }
         return descendants;
+    }
+
+    @Override
+    public Set<T> getNodes() {
+        return toMap().keySet();
     }
 
     @Override
