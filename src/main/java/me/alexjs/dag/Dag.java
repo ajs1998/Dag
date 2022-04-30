@@ -45,6 +45,18 @@ public interface Dag<T> extends Cloneable {
      */
     void addAll(Collection<T> nodes);
 
+    // TODO
+    void remove(T node);
+
+    // TODO
+    void remove(T parent, T child);
+
+    // TODO
+    void removeAll(Collection<T> nodes);
+
+    // TODO
+    boolean isEmpty();
+
     /**
      * Order the nodes of this DAG such that all of a node's children come after it in the ordering.
      *
@@ -105,7 +117,7 @@ public interface Dag<T> extends Cloneable {
      *
      * @return a map representation of this DAG
      */
-    Map<T, Set<T>> toMap();
+    Map<T, Collection<T>> toMap();
 
     /**
      * Create a shallow copy of this DAG. Mutations to a node in the copy will result in mutations to the node in the

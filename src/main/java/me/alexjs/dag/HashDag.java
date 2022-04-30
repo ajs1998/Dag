@@ -1,23 +1,15 @@
 package me.alexjs.dag;
 
-import java.util.Collection;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
- * An implementation of {@link Dag}. The underlying structure is a {@code HashMap<T, HashSet<T>>}.
+ * An implementation of {@link Dag}. The underlying structure is a {@link HashMap}.
  *
  * @param <T> the node type
  */
 public class HashDag<T> implements Dag<T> {
 
-    private final Map<T, Set<T>> map;
+    private final Map<T, Collection<T>> map;
 
     /**
      * Construct an empty {@link HashDag}.
@@ -29,9 +21,10 @@ public class HashDag<T> implements Dag<T> {
     /**
      * Construct a DAG based on a {@link Map}. Each key of the map will be a node and each node's value will be the set
      * of its children.
+     *
      * @param map the
      */
-    public HashDag(Map<T, Set<T>> map) {
+    public HashDag(Map<T, Collection<T>> map) {
         this.map = new HashMap<>();
         map.forEach(this::putAll);
     }
@@ -66,9 +59,35 @@ public class HashDag<T> implements Dag<T> {
 
     @Override
     public void addAll(Collection<T> nodes) {
-        for (T node : nodes) {
-            add(node);
+        nodes.forEach(this::add);
+    }
+
+    @Override
+    public void remove(T node) {
+        map.remove(node);
+        // TODO I think this is probably quite inefficient
+        map.forEach((n, children) -> children.forEach(child -> remove(node, child)));
+    }
+
+    @Override
+    public void remove(T parent, T child) {
+        Collection<T> children = map.get(parent);
+        if (children != null) {
+            children.remove(child);
+            if (children.isEmpty()) {
+                map.remove(parent);
+            }
         }
+    }
+
+    @Override
+    public void removeAll(Collection<T> nodes) {
+        nodes.forEach(this::remove);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return map.isEmpty();
     }
 
     @Override
@@ -80,7 +99,7 @@ public class HashDag<T> implements Dag<T> {
         List<T> sorted = new LinkedList<>();
         Deque<T> s = new LinkedList<>(getRoots());
 
-        Map<T, Set<T>> copy = toMap();
+        Map<T, Collection<T>> copy = toMap();
 
         while (!s.isEmpty()) {
             T n = s.pop();
@@ -93,7 +112,7 @@ public class HashDag<T> implements Dag<T> {
             }
         }
 
-        if (!copy.values().stream().allMatch(Set::isEmpty)) {
+        if (!copy.values().stream().allMatch(Collection::isEmpty)) {
             // Circular Dependency
             return null;
         }
@@ -105,7 +124,7 @@ public class HashDag<T> implements Dag<T> {
     @Override
     public Set<T> getRoots() {
         Set<T> roots = new HashSet<>(map.keySet());
-        for (Set<T> children : map.values()) {
+        for (Collection<T> children : map.values()) {
             roots.removeAll(children);
         }
         return roots;
@@ -114,7 +133,7 @@ public class HashDag<T> implements Dag<T> {
     @Override
     public Set<T> getLeaves() {
         Set<T> leaves = new HashSet<>();
-        for (Map.Entry<T, Set<T>> entry : map.entrySet()) {
+        for (Map.Entry<T, Collection<T>> entry : map.entrySet()) {
             if (entry.getValue().isEmpty()) {
                 leaves.add(entry.getKey());
             }
@@ -125,7 +144,7 @@ public class HashDag<T> implements Dag<T> {
     @Override
     public Set<T> getParents(T node) {
         Set<T> set = new HashSet<>();
-        for (Map.Entry<T, Set<T>> entry : map.entrySet()) {
+        for (Map.Entry<T, Collection<T>> entry : map.entrySet()) {
             if (entry.getValue().contains(node)) {
                 set.add(entry.getKey());
             }
@@ -135,7 +154,7 @@ public class HashDag<T> implements Dag<T> {
 
     @Override
     public Set<T> getChildren(T node) {
-        Set<T> children = map.get(node);
+        Collection<T> children = map.get(node);
         if (children == null) {
             return new HashSet<>();
         } else {
@@ -162,8 +181,8 @@ public class HashDag<T> implements Dag<T> {
     }
 
     @Override
-    public Map<T, Set<T>> toMap() {
-        Map<T, Set<T>> copy = new HashMap<>();
+    public Map<T, Collection<T>> toMap() {
+        Map<T, Collection<T>> copy = new HashMap<>();
         map.forEach((key, value) -> copy.put(key, new HashSet<>(value)));
         return copy;
     }

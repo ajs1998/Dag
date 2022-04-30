@@ -3,17 +3,9 @@ package me.alexjs.dag;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 public class TestDag {
@@ -41,20 +33,24 @@ public class TestDag {
     }
 
     @Test
-    public void testDagTraversal() throws Throwable {
+    public void testDagTraversal() {
 
         Dag<Integer> dag = populateDag();
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
         List<Integer> sorted = new LinkedList<>();
-        DagUtil.traverse(dag, i -> {
-            synchronized (sorted) {
-                sorted.add(i);
-            }
-        }, executorService);
 
-        Assertions.assertTrue(executorService.awaitTermination(1, TimeUnit.SECONDS));
+        DagIterator<Integer> it = new DagIterator<>(dag);
+        while (it.hasNext()) {
+            final int i = it.next();
+            executorService.submit(() -> {
+                synchronized (sorted) {
+                    sorted.add(i);
+                }
+                it.pushParents(i);
+            });
+        }
 
         assertOrder(dag, sorted);
 
@@ -140,9 +136,17 @@ public class TestDag {
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-        DagUtil.traverse(dag, i -> Assertions.fail("This shouldn't happen"), executorService);
+        DagIterator<Integer> it = new DagIterator<>(dag);
+        while (it.hasNext()) {
+            // Peek a node in the iterator
+            Integer i = it.next();
 
-        Assertions.assertTrue(executorService.isShutdown());
+            // Submit a task for this node
+            executorService.submit(() -> {
+                Assertions.fail("This shouldn't happen");
+                it.pushParents(i);
+            });
+        }
 
     }
 
@@ -152,7 +156,7 @@ public class TestDag {
         // Test with putAll()
         Dag<Integer> dag = new HashDag<>();
         dag.putAll(0, new HashSet<>());
-        Map<Integer, Set<Integer>> map = dag.toMap();
+        Map<Integer, Collection<Integer>> map = dag.toMap();
 
         Assertions.assertTrue(map.containsKey(0));
         Assertions.assertTrue(map.get(0).isEmpty());
@@ -164,31 +168,6 @@ public class TestDag {
 
         Assertions.assertTrue(map.containsKey(0));
         Assertions.assertTrue(map.get(0).isEmpty());
-
-    }
-
-    @Test
-    public void testException() {
-
-        Dag<Integer> dag = populateDag();
-
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-
-        String message = IntStream.generate(random::nextInt).limit(2)
-                .collect(StringBuilder::new, StringBuilder::append, (a, b) -> a.append(b.toString()))
-                .toString();
-
-        Throwable throwable = new Error(message);
-        try {
-            DagUtil.traverse(dag, i -> {
-                throw throwable;
-            }, executorService);
-        } catch (Throwable t) {
-            Assertions.assertEquals(throwable, t);
-            return;
-        }
-
-        Assertions.fail();
 
     }
 
@@ -219,7 +198,9 @@ public class TestDag {
             Assertions.assertEquals(dag.toMap().keySet().size(), sorted.size());
             for (Integer parent : sorted) {
                 // If a parent comes after any of its children, then fail
-                dag.getChildren(parent).stream().filter(child -> sorted.indexOf(parent) <= sorted.indexOf(child)).forEach(i -> Assertions.fail());
+                dag.getChildren(parent).stream()
+                        .filter(child -> sorted.indexOf(parent) <= sorted.indexOf(child))
+                        .forEach(i -> Assertions.fail());
             }
         }
     }
