@@ -75,8 +75,6 @@ public class DagIterator<T> implements Iterator<T> {
             // TODO clear the queue, clear the DAG, hasNext = false
             throw new CompletionException(e);
 
-        } finally {
-
         }
 
     }

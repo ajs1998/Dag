@@ -1,7 +1,6 @@
 package me.alexjs.dag;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -25,29 +24,40 @@ public class TestDag {
 
     }
 
-    // TODO Remove this comment
-    @Disabled
     @Test
     public void testDagTraversal() {
 
         Dag<Integer> dag = populateDagSimple();
-
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        Dag<Integer> copy = dag.clone();
 
         List<Integer> sorted = new LinkedList<>();
 
         DagIterator<Integer> it = new DagIterator<>(dag);
         while (it.hasNext()) {
-            final int i = it.next();
-            executorService.submit(() -> {
-                synchronized (sorted) {
-                    sorted.add(i);
-                }
-                it.pushParents(i);
-            });
+            int i = it.next();
+            sorted.add(i);
+            it.pushParents(i);
         }
 
+        // Make sure the original DAG is unmodified by the iterator
+        Assertions.assertEquals(copy, dag);
         assertOrder(dag, sorted);
+
+        // TODO Async test
+//        ExecutorService executorService = Executors.newFixedThreadPool(1);
+//
+//        DagIterator<Integer> it2 = new DagIterator<>(dag);
+//        while (it2.hasNext()) {
+//            final int i = it2.next();
+//            executorService.submit(() -> {
+//                synchronized (sorted) {
+//                    sorted.add(i);
+//                }
+//                it2.pushParents(i);
+//            });
+//        }
+//
+//        assertOrder(dag, sorted);
 
     }
 
