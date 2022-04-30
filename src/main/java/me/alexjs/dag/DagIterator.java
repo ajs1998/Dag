@@ -44,6 +44,7 @@ public class DagIterator<T> implements Iterator<T> {
         // Otherwise, add the leaves to the queue of nodes that are ready to be visited
         this.queue = new LinkedBlockingQueue<>(leaves);
 
+        // Create a set of nodes representing nodes which have already been added to the queue
         this.visited = new HashSet<>(queue);
 
         // Makes sure that internal structures are unmodified between each call to hasNext() and next()
@@ -71,7 +72,7 @@ public class DagIterator<T> implements Iterator<T> {
     @Override
     public T next() {
 
-        assert lock.getHoldCount() == 1;
+        assert hasNext.get();
 
         // Retrieve and remove a node off the queue
         T node = queue.poll();
@@ -99,9 +100,9 @@ public class DagIterator<T> implements Iterator<T> {
         // Add the node's parents to the queue
         Set<T> parents = dag.getParents(child);
         for (T parent : parents) {
-            if (!visited.contains(parent)) {
+            // If the node hasn't already been visited, then add it to the queue and the visited set
+            if (visited.add(parent)) {
                 queue.add(parent);
-                visited.add(parent);
             }
         }
 

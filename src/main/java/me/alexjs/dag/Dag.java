@@ -49,9 +49,6 @@ public interface Dag<T> extends Cloneable {
     void remove(T node);
 
     // TODO
-    void remove(T parent, T child);
-
-    // TODO
     void removeAll(Collection<T> nodes);
 
     // TODO

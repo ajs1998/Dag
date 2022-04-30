@@ -62,24 +62,19 @@ public class HashDag<T> implements Dag<T> {
         nodes.forEach(this::add);
     }
 
+    // Removes a node and removes it from all its parents' lists of children
     @Override
     public void remove(T node) {
         map.remove(node);
-        // TODO I think this is probably quite inefficient
-        map.forEach((n, children) -> children.forEach(child -> remove(node, child)));
-    }
-
-    @Override
-    public void remove(T parent, T child) {
-        Collection<T> children = map.get(parent);
-        if (children != null) {
-            children.remove(child);
-            if (children.isEmpty()) {
-                map.remove(parent);
+        for (T parent : map.keySet()) {
+            Collection<T> children = map.get(parent);
+            if (children != null) {
+                children.remove(node);
             }
         }
     }
 
+    // Removes a bunch of nodes
     @Override
     public void removeAll(Collection<T> nodes) {
         nodes.forEach(this::remove);
