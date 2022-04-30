@@ -45,10 +45,10 @@ public class DagIterator<T> implements Iterator<T> {
         this.queue = new LinkedBlockingQueue<>(leaves);
 
         // Create a set of nodes representing nodes which have already been added to the queue
-        this.queued = new HashSet<>(queue);
+        this.queued = new HashSet<>(leaves);
 
         // Makes sure that internal structures are unmodified between each call to hasNext() and next()
-        this.lock = new ReentrantLock();
+        this.lock = new ReentrantLock(true);
 
         // If there are nodes in the queue, then we're already done iterating
         this.hasNext = !leaves.isEmpty();
@@ -57,9 +57,6 @@ public class DagIterator<T> implements Iterator<T> {
 
     @Override
     public boolean hasNext() {
-
-        // Lock internal operations
-        lock.lock();
 
         return hasNext;
 
@@ -80,9 +77,6 @@ public class DagIterator<T> implements Iterator<T> {
 
         } finally {
 
-            // Unlock internal operations
-            lock.unlock();
-
         }
 
     }
@@ -95,35 +89,35 @@ public class DagIterator<T> implements Iterator<T> {
      */
     public void pushParents(T node) {
 
-        // Lock internal operations
-        lock.lock();
-
-        // Get the node's parents that haven't yet been enqueued before we remove the node from the DAG
-        Set<T> parents = dag.getParents(node);
+        // Get the node's parents before we remove the node from the DAG
+        // Needs to happen before dag.remove()
+        Set<T> enqueue = dag.getParents(node);
 
         // Remove this node from the DAG we're using to keep track of nodes to be enqueued
         // TODO What to do with null nodes in the DAG?
         //  I think there's no reason they couldn't be supported
         dag.remove(node);
 
-        // Here's out definition of hasNext
+        // Here's our definition of hasNext
+        // Needs to happen after dag.remove()
         // TODO This might need to be tweaked (also make sure the short circuiting here is right)
-        hasNext = !queue.isEmpty() || !dag.isEmpty();
+        if (dag.isEmpty()) {
+            hasNext = false;
+            return;
+        }
 
         // Don't enqueue nodes that have already been enqueued
-        parents.removeAll(queued);
+        enqueue.removeAll(queued);
 
         // Don't enqueue parent nodes that still have children
-        parents.removeIf(p -> !dag.getChildren(p).isEmpty());
+        // Needs to happen after dag.remove()
+        enqueue.removeIf(p -> !dag.getChildren(p).isEmpty());
 
         // Add the nodes to the queue
-        queue.addAll(parents);
+        queue.addAll(enqueue);
 
         // Continue to keep track of which nodes we have enqueued
-        queued.addAll(parents);
-
-        // Unlock internal operations
-        lock.unlock();
+        queued.addAll(enqueue);
 
     }
 

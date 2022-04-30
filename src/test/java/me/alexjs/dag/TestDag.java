@@ -46,9 +46,9 @@ public class TestDag {
     @Test
     public void testDagTraversal() {
 
-        Dag<Integer> dag = populateDag();
+        Dag<Integer> dag = populateDagSimple();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
 
         List<Integer> sorted = new LinkedList<>();
 
@@ -199,6 +199,25 @@ public class TestDag {
                 .limit(100)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         dag.addAll(extra);
+
+        return dag;
+
+    }
+
+    private Dag<Integer> populateDagSimple() {
+
+        Dag<Integer> dag = new HashDag<>();
+
+        dag.put(1, 5);
+        dag.put(2, 5);
+        dag.put(2, 6);
+        dag.put(3, 6);
+        dag.put(4, 6);
+        dag.put(4, 7);
+        dag.put(5, 8);
+        dag.put(6, 8);
+        dag.put(7, 8);
+        dag.put(7, 9);
 
         return dag;
 

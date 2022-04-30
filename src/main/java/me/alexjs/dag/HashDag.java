@@ -1,6 +1,15 @@
 package me.alexjs.dag;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * An implementation of {@link Dag}.
@@ -118,6 +127,7 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public boolean remove(Object node) {
+        // FIXME NOT WORKING RIGHT NOW
         Collection<T> removed = map.remove(node);
         for (T parent : map.keySet()) {
             Collection<T> children = map.get(parent);
