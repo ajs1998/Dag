@@ -1,58 +1,34 @@
 package me.alexjs.dag;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * A Directed Acyclic Graph. A node may have any number of parents and children, and the graph may have any number of
- * roots and leaves.
+ * A Directed Acyclic Graph.
+ * A node may have any number of parents and children, and the graph may have any number of roots and leaves.
  *
  * @param <T> The node type
  */
-public interface Dag<T> extends Cloneable {
+public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
 
     /**
-     * Add a parent-child relationship to this DAG. If either the parent or the child are not already in the graph, each
-     * will be added.
+     * TODO
      *
-     * @param parent the parent node
-     * @param child  the parent node's child
+     * @param parent
+     * @param child
      */
     void put(T parent, T child);
 
     /**
-     * Add many parent-child relationships to this DAG. If the parent or any of its children are not already in the
-     * graph, each will be added.
+     * TODO
      *
-     * @param parent   the parent
-     * @param children the parent node's children
+     * @param parent
+     * @param children
      */
     void putAll(T parent, Collection<T> children);
-
-    /**
-     * Add a single node to this DAG. If the node is already in the graph, then its children will be unaffected.
-     *
-     * @param node the node to add
-     */
-    void add(T node);
-
-    /**
-     * Add nodes to this DAG. If any node is already in the graph, then its children will be unaffected.
-     *
-     * @param nodes the nodes to add
-     */
-    void addAll(Collection<T> nodes);
-
-    // TODO
-    void remove(T node);
-
-    // TODO
-    void removeAll(Collection<T> nodes);
-
-    // TODO
-    boolean isEmpty();
 
     /**
      * Order the nodes of this DAG such that all of a node's children come after it in the ordering.
@@ -109,8 +85,8 @@ public interface Dag<T> extends Cloneable {
     Set<T> getDescendants(T node);
 
     /**
-     * Create a {@link Map} representation of this DAG. Each node will be a key of the map and the set of children of
-     * each node will be the node's associated value.
+     * Create a {@link Map} representation of this DAG.
+     * Each node will be a key of the map, and each value is a collection of a node's children.
      *
      * @return a map representation of this DAG
      */

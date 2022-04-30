@@ -13,13 +13,13 @@ import java.util.concurrent.locks.ReentrantLock;
  * A node is returned by {@link DagIterator#next} either if it is a leaf node with no children,
  * or after {@link DagIterator#pushParents} has already been called for all of its children nodes.
  *
- * @param <T>
+ * @param <T> the type of the nodes that are returned by this iterator
  */
 public class DagIterator<T> implements Iterator<T> {
 
     private final Dag<T> dag;
     private final BlockingQueue<T> queue;
-    private final Set<T> visited;
+    private final Set<T> queued;
     private final Lock lock;
 
     private boolean hasNext;
@@ -44,7 +44,7 @@ public class DagIterator<T> implements Iterator<T> {
         this.queue = new LinkedBlockingQueue<>(leaves);
 
         // Create a set of nodes representing nodes which have already been added to the queue
-        this.visited = new HashSet<>(queue);
+        this.queued = new HashSet<>(queue);
 
         // Makes sure that internal structures are unmodified between each call to hasNext() and next()
         this.lock = new ReentrantLock();
@@ -67,11 +67,13 @@ public class DagIterator<T> implements Iterator<T> {
     @Override
     public T next() {
 
-        // Block until a node is ready to be polled
-        while (queue.isEmpty()) ;
-
         // Retrieve and remove a node off the queue
-        T node = queue.poll();
+        T node;
+        try {
+            node = queue.take();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Remove this node from the DAG we're using to keep track of nodes to be visited
         // TODO What to do with null nodes in the DAG?
@@ -87,19 +89,22 @@ public class DagIterator<T> implements Iterator<T> {
 
     }
 
+    /**
+     * TODO
+     * @param child
+     */
     public void pushParents(T child) {
 
         // Lock internal operations
         lock.lock();
 
-        // Add the node's parents to the queue
+        // Get the node's parents that haven't yet been enqueued
         Set<T> parents = dag.getParents(child);
-        for (T parent : parents) {
-            // If the node hasn't already been visited, then add it to the queue and the visited set
-            if (visited.add(parent)) {
-                queue.add(parent);
-            }
-        }
+        parents.removeAll(queued);
+
+        // Add each parent to the queue
+        queue.addAll(parents);
+        queued.addAll(parents);
 
         // Unlock internal operations
         lock.unlock();

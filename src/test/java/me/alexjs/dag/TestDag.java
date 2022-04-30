@@ -33,6 +33,7 @@ public class TestDag {
 
     }
 
+    @Disabled
     @Test
     public void testDagTraversal() {
 
