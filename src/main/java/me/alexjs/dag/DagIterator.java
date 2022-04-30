@@ -1,9 +1,10 @@
 package me.alexjs.dag;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,10 +18,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class DagIterator<T> implements Iterator<T> {
 
     private final Dag<T> dag;
-    private final AtomicBoolean hasNext;
     private final BlockingQueue<T> queue;
     private final Set<T> visited;
-    private final ReentrantLock lock;
+    private final Lock lock;
+
+    private boolean hasNext;
 
     /**
      * Create a new {@link DagIterator} for a given {@link Dag}
@@ -38,9 +40,6 @@ public class DagIterator<T> implements Iterator<T> {
         // Save a copy of the dag so the original DAG is not modified
         this.dag = copy;
 
-        // If there are no leaves (empty DAG), then we're already done iterating
-        this.hasNext = new AtomicBoolean(!leaves.isEmpty());
-
         // Otherwise, add the leaves to the queue of nodes that are ready to be visited
         this.queue = new LinkedBlockingQueue<>(leaves);
 
@@ -50,6 +49,9 @@ public class DagIterator<T> implements Iterator<T> {
         // Makes sure that internal structures are unmodified between each call to hasNext() and next()
         this.lock = new ReentrantLock();
 
+        // If there are nodes in the queue, then we're already done iterating
+        this.hasNext = !leaves.isEmpty();
+
     }
 
     @Override
@@ -58,13 +60,6 @@ public class DagIterator<T> implements Iterator<T> {
         // Lock internal operations
         lock.lock();
 
-        // If hasNext is false, return it immediately, otherwise,
-        // wait until an element is ready to be popped from the queue
-        boolean hasNext = this.hasNext.get();
-        if (hasNext) {
-            while (queue.isEmpty()) ;
-        }
-
         return hasNext;
 
     }
@@ -72,7 +67,8 @@ public class DagIterator<T> implements Iterator<T> {
     @Override
     public T next() {
 
-        assert hasNext.get();
+        // Block until a node is ready to be polled
+        while (queue.isEmpty()) ;
 
         // Retrieve and remove a node off the queue
         T node = queue.poll();
@@ -82,8 +78,7 @@ public class DagIterator<T> implements Iterator<T> {
         //  I think there's no reason they couldn't be supported
         dag.remove(node);
 
-        // If the DAG is empty, then there are no more nodes to visit
-        hasNext.set(!dag.isEmpty());
+        hasNext = !queue.isEmpty() || !dag.isEmpty();
 
         // Unlock internal operations
         lock.unlock();
