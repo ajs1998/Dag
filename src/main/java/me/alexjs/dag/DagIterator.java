@@ -2,6 +2,7 @@ package me.alexjs.dag;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -67,44 +68,58 @@ public class DagIterator<T> implements Iterator<T> {
     @Override
     public T next() {
 
-        // Retrieve and remove a node off the queue
-        T node;
         try {
-            node = queue.take();
+
+            // Retrieve and remove a node off the queue
+            return queue.take();
+
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+
+            // TODO clear the queue, clear the DAG, hasNext = false
+            throw new NoSuchElementException(e);
+
+        } finally {
+
+            // Unlock internal operations
+            lock.unlock();
+
         }
-
-        // Remove this node from the DAG we're using to keep track of nodes to be visited
-        // TODO What to do with null nodes in the DAG?
-        //  I think there's no reason they couldn't be supported
-        dag.remove(node);
-
-        hasNext = !queue.isEmpty() || !dag.isEmpty();
-
-        // Unlock internal operations
-        lock.unlock();
-
-        return node;
 
     }
 
     /**
-     * TODO
+     * Push the parents of a given {@code node} to this iterator.
+     * This is used to ensure nodes are only visited once all their children have already been visited.
      *
-     * @param child
+     * @param node the node whose parents need to be enqueued
      */
-    public void pushParents(T child) {
+    public void pushParents(T node) {
 
         // Lock internal operations
         lock.lock();
 
-        // Get the node's parents that haven't yet been enqueued
-        Set<T> parents = dag.getParents(child);
+        // Get the node's parents that haven't yet been enqueued before we remove the node from the DAG
+        Set<T> parents = dag.getParents(node);
+
+        // Remove this node from the DAG we're using to keep track of nodes to be enqueued
+        // TODO What to do with null nodes in the DAG?
+        //  I think there's no reason they couldn't be supported
+        dag.remove(node);
+
+        // Here's out definition of hasNext
+        // TODO This might need to be tweaked (also make sure the short circuiting here is right)
+        hasNext = !queue.isEmpty() || !dag.isEmpty();
+
+        // Don't enqueue nodes that have already been enqueued
         parents.removeAll(queued);
 
-        // Add each parent to the queue
+        // Don't enqueue parent nodes that still have children
+        parents.removeIf(p -> !dag.getChildren(p).isEmpty());
+
+        // Add the nodes to the queue
         queue.addAll(parents);
+
+        // Continue to keep track of which nodes we have enqueued
         queued.addAll(parents);
 
         // Unlock internal operations

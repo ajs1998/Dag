@@ -15,18 +15,20 @@ import java.util.Set;
 public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
 
     /**
-     * TODO
+     * Add a parent-child relationship to this DAG.
+     * If either the parent or the child are not already in the graph, each will be added.
      *
-     * @param parent
-     * @param child
+     * @param parent the parent node
+     * @param child  the parent node's child
      */
     void put(T parent, T child);
 
     /**
-     * TODO
+     * Add many parent-child relationships to this DAG.
+     * If the parent or any of its children are not already in the graph, each will be added.
      *
-     * @param parent
-     * @param children
+     * @param parent   the parent
+     * @param children the parent node's children
      */
     void putAll(T parent, Collection<T> children);
 

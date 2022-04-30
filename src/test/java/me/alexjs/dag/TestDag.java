@@ -14,7 +14,15 @@ public class TestDag {
     private final Random random;
 
     public TestDag() {
-        this.random = new Random();
+
+        // I want to give these tests the opportunity to flake
+        // If tests flake because the random numbers it generates are just right,
+        // then I want to be able to recreate it
+        int seed = new Random().nextInt(1000);
+        System.out.println("Random seed: " + seed);
+
+        this.random = new Random(seed);
+
     }
 
     @Test
@@ -27,13 +35,14 @@ public class TestDag {
 
         assertOrder(dag, sorted);
 
-        // Test HashDag's map constructor
+        // Bonus: test HashDag's map constructor
         Dag<Integer> dag2 = new HashDag<>(dag.toMap());
         Assertions.assertEquals(dag, dag2);
 
     }
 
-    @Disabled
+    // TODO Remove this comment
+//    @Disabled
     @Test
     public void testDagTraversal() {
 

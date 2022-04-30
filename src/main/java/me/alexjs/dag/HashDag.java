@@ -3,7 +3,8 @@ package me.alexjs.dag;
 import java.util.*;
 
 /**
- * An implementation of {@link Dag}. The underlying structure is a {@link HashMap}.
+ * An implementation of {@link Dag}.
+ * The underlying structure is a {@link HashMap}.
  *
  * @param <T> the node type
  */
@@ -28,6 +29,9 @@ public class HashDag<T> implements Dag<T> {
         this.map = new HashMap<>();
         map.forEach(this::putAll);
     }
+
+
+    /* Methods from Collection<T> */
 
     /**
      * Returns the number of nodes this DAG contains.
@@ -230,6 +234,9 @@ public class HashDag<T> implements Dag<T> {
     public Dag<T> clone() {
         return new HashDag<>(map);
     }
+
+
+    /* Methods exclusive to Dag<T> */
 
     @Override
     public void put(T parent, T child) {
