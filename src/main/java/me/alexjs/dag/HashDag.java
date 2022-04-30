@@ -30,13 +30,13 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Returns the number of nodes this DAG represents.
+     * Returns the number of nodes this DAG contains.
      *
      * @return the size of the DAG
      */
     @Override
     public int size() {
-        return 0;
+        return map.keySet().size();
     }
 
     /**
@@ -132,7 +132,7 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public boolean containsAll(Collection<?> collection) {
-        return false;
+        return map.keySet().containsAll(collection);
     }
 
     /**
@@ -142,12 +142,13 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public boolean addAll(Collection<? extends T> nodes) {
+        boolean changed = false;
         for (T node : nodes) {
             if (add(node)) {
-                return true;
+                changed = true;
             }
         }
-        return false;
+        return changed;
     }
 
     /**
@@ -158,12 +159,13 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public boolean removeAll(Collection<?> nodes) {
+        boolean changed = false;
         for (Object node : nodes) {
             if (remove(node)) {
-                return true;
+                changed = true;
             }
         }
-        return false;
+        return changed;
     }
 
     /**
