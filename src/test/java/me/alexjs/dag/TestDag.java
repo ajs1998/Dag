@@ -42,7 +42,7 @@ public class TestDag {
     }
 
     // TODO Remove this comment
-//    @Disabled
+    @Disabled
     @Test
     public void testDagTraversal() {
 

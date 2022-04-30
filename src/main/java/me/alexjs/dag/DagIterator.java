@@ -2,9 +2,9 @@ package me.alexjs.dag;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -76,7 +76,7 @@ public class DagIterator<T> implements Iterator<T> {
         } catch (InterruptedException e) {
 
             // TODO clear the queue, clear the DAG, hasNext = false
-            throw new NoSuchElementException(e);
+            throw new CompletionException(e);
 
         } finally {
 
