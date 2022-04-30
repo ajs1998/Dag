@@ -1,15 +1,6 @@
 package me.alexjs.dag;
 
-import java.util.Collection;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * An implementation of {@link Dag}.
@@ -103,8 +94,15 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public <A> A[] toArray(A[] array) {
-        // TODO
-        return null;
+        Object[] sorted = sort().toArray();
+        if (array.length < sorted.length) {
+            return (A[]) Arrays.copyOf(sorted, sorted.length, array.getClass());
+        }
+        System.arraycopy(sorted, 0, array, 0, sorted.length);
+        if (array.length > sorted.length) {
+            array[sorted.length] = null;
+        }
+        return array;
     }
 
     /**
@@ -127,7 +125,6 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public boolean remove(Object node) {
-        // FIXME NOT WORKING RIGHT NOW
         Collection<T> removed = map.remove(node);
         for (T parent : map.keySet()) {
             Collection<T> children = map.get(parent);
@@ -209,29 +206,27 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * TODO
+     * Returns {@literal true} if the specified object is equal to this DAG.
      *
-     * @param o the object to be compared for equality with this DAG
-     * @return
+     * @param o object to be compared for equality with this collection
+     * @return {@literal true} if the specified object is equal to this DAG
      */
     @Override
     public boolean equals(Object o) {
-        // TODO maybe not necessary
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HashDag<?> other = (HashDag<?>) o;
-        return Objects.equals(map, other.map);
+        return map.equals(other.map);
     }
 
     /**
-     * TODO
+     * Returns the hash code value for this DAG.
      *
-     * @return
+     * @return the hash code value for this DAG
      */
     @Override
     public int hashCode() {
-        // TODO maybe not necessary
-        return super.hashCode();
+        return Objects.hash(map);
     }
 
     /**
