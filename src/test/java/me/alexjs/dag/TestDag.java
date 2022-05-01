@@ -2,12 +2,15 @@ package me.alexjs.dag;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
+// No test should take longer than a second
+@Timeout(1)
 public class TestDag {
 
     private final Random random;
@@ -43,21 +46,23 @@ public class TestDag {
         Assertions.assertEquals(copy, dag);
         assertOrder(dag, sorted);
 
-        // TODO Async test
-//        ExecutorService executorService = Executors.newFixedThreadPool(1);
-//
-//        DagIterator<Integer> it2 = new DagIterator<>(dag);
-//        while (it2.hasNext()) {
-//            final int i = it2.next();
-//            executorService.submit(() -> {
-//                synchronized (sorted) {
-//                    sorted.add(i);
-//                }
-//                it2.pushParents(i);
-//            });
-//        }
-//
-//        assertOrder(dag, sorted);
+        sorted.clear();
+
+        // TODO Use more than one thread
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+
+        DagIterator<Integer> it2 = new DagIterator<>(dag);
+        while (it2.hasNext()) {
+            final int i = it2.next();
+            executorService.submit(() -> {
+                synchronized (sorted) {
+                    sorted.add(i);
+                }
+                it2.pushParents(i);
+            });
+        }
+
+        assertOrder(dag, sorted);
 
     }
 
