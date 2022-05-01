@@ -79,6 +79,57 @@ public class TestDag {
     }
 
     @Test
+    public void testIterators() {
+
+        Dag<Integer> dag = populateDag();
+        Dag<Integer> copy = dag.clone();
+
+        List<Integer> sorted = new LinkedList<>();
+
+        // Test the iterator with a while loop
+        Iterator<Integer> it = dag.iterator();
+        while (it.hasNext()) {
+            Integer next = it.next();
+            sorted.add(next);
+        }
+        Collections.reverse(sorted);
+        assertOrder(dag, sorted);
+        Assertions.assertEquals(copy, dag);
+
+        sorted.clear();
+
+        for (Integer next : dag) {
+            sorted.add(next);
+        }
+        Collections.reverse(sorted);
+        assertOrder(dag, sorted);
+        Assertions.assertEquals(copy, dag);
+
+        sorted.clear();
+
+        sorted.addAll(dag);
+        Collections.reverse(sorted);
+        assertOrder(dag, sorted);
+        Assertions.assertEquals(copy, dag);
+
+        sorted.clear();
+
+        Collections.addAll(sorted, dag.toArray(new Integer[0]));
+        Collections.reverse(sorted);
+        assertOrder(dag, sorted);
+        Assertions.assertEquals(copy, dag);
+
+        sorted.clear();
+
+        Collections.addAll(sorted, dag.toArray(new Integer[999999]));
+        sorted = sorted.subList(0, sorted.indexOf(null));
+        Collections.reverse(sorted);
+        assertOrder(dag, sorted);
+        Assertions.assertEquals(copy, dag);
+
+    }
+
+    @Test
     public void testCircularDependency() {
 
         // This DAG is guaranteed to have no circular dependencies
@@ -276,6 +327,28 @@ public class TestDag {
         Assertions.assertSame(copy.getClass(), dag.getClass());
         Assertions.assertEquals(copy, dag);
         Assertions.assertEquals(copy.hashCode(), dag.hashCode());
+
+    }
+
+    @Test
+    public void testNulls() {
+
+        Dag<Integer> dag = new HashDag<>();
+
+        dag.add(null);
+
+        dag.put(0, null);
+
+        dag.put(null, 1);
+
+        Assertions.assertEquals(3, dag.size());
+
+        List<Integer> sorted = dag.sort();
+        Collections.reverse(sorted);
+        assertOrder(dag, sorted);
+
+        Assertions.assertTrue(dag.remove(null));
+        Assertions.assertEquals(2, dag.size());
 
     }
 

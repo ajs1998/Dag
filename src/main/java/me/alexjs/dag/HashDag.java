@@ -71,7 +71,8 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public Iterator<T> iterator() {
-        return new DagIterator<>(this);
+        // TODO
+        return sort().iterator();
     }
 
     /**
