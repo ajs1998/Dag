@@ -253,26 +253,30 @@ public class HashDag<T> implements Dag<T> {
     /* Methods exclusive to Dag<T> */
 
     @Override
-    public void put(T parent, T child) {
+    public boolean put(T parent, T child) {
+        boolean changed;
         if (!map.containsKey(parent)) {
             Set<T> children = new HashSet<>();
             children.add(child);
-            map.put(parent, children);
+            changed = map.put(parent, children) != children;
         } else {
-            map.get(parent).add(child);
+            changed = map.get(parent).add(child);
         }
-        add(child);
+        changed |= add(child);
+        return changed;
     }
 
     @Override
-    public void putAll(T parent, Collection<T> children) {
+    public boolean putAll(T parent, Collection<T> children) {
+        boolean changed = false;
         if (!children.isEmpty()) {
             for (T child : children) {
-                put(parent, child);
+                changed |= put(parent, child);
             }
         } else {
-            add(parent);
+            changed = add(parent);
         }
+        return changed;
     }
 
     @Override

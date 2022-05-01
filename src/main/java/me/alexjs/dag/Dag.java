@@ -19,8 +19,9 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      *
      * @param parent the parent node
      * @param child  the parent node's child
+     * @return
      */
-    void put(T parent, T child);
+    boolean put(T parent, T child);
 
     /**
      * Add many parent-child relationships to this DAG.
@@ -28,8 +29,9 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      *
      * @param parent   the parent
      * @param children the parent node's children
+     * @return
      */
-    void putAll(T parent, Collection<T> children);
+    boolean putAll(T parent, Collection<T> children);
 
     /**
      * Order the nodes of this DAG such that all of a node's children come after it in the ordering.

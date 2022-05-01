@@ -1,6 +1,7 @@
 package me.alexjs.dag;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -13,24 +14,17 @@ import java.util.stream.IntStream;
 @Timeout(1)
 public class TestDag {
 
-    private final Random random;
+    private static TestHelper helper;
 
-    public TestDag() {
-
-        // I want to give these tests the opportunity to flake
-        // If tests flake because the random numbers it generates are just right,
-        // then I want to be able to recreate it
-        int seed = new Random().nextInt(1000);
-        System.out.println("Random seed: " + seed);
-
-        this.random = new Random(seed);
-
+    @BeforeAll
+    public static void init() {
+        helper = new TestHelper();
     }
 
     @Test
     public void testDagTraversal() {
 
-        Dag<Integer> dag = populateDagSimple();
+        Dag<Integer> dag = helper.populateDagSimple();
         Dag<Integer> copy = dag.clone();
 
         List<Integer> sorted = new LinkedList<>();
@@ -44,7 +38,7 @@ public class TestDag {
 
         // Make sure the original DAG is unmodified by the iterator
         Assertions.assertEquals(copy, dag);
-        assertOrder(dag, sorted);
+        helper.assertOrder(dag, sorted);
 
         sorted.clear();
 
@@ -62,70 +56,19 @@ public class TestDag {
             });
         }
 
-        assertOrder(dag, sorted);
+        helper.assertOrder(dag, sorted);
 
     }
 
     @Test
     public void testSort() {
 
-        Dag<Integer> dag = populateDag();
+        Dag<Integer> dag = helper.populateDag();
 
         List<Integer> sorted = dag.sort();
         Collections.reverse(sorted);
 
-        assertOrder(dag, sorted);
-
-    }
-
-    @Test
-    public void testIterators() {
-
-        Dag<Integer> dag = populateDag();
-        Dag<Integer> copy = dag.clone();
-
-        List<Integer> sorted = new LinkedList<>();
-
-        // Test the iterator with a while loop
-        Iterator<Integer> it = dag.iterator();
-        while (it.hasNext()) {
-            Integer next = it.next();
-            sorted.add(next);
-        }
-        Collections.reverse(sorted);
-        assertOrder(dag, sorted);
-        Assertions.assertEquals(copy, dag);
-
-        sorted.clear();
-
-        for (Integer next : dag) {
-            sorted.add(next);
-        }
-        Collections.reverse(sorted);
-        assertOrder(dag, sorted);
-        Assertions.assertEquals(copy, dag);
-
-        sorted.clear();
-
-        sorted.addAll(dag);
-        Collections.reverse(sorted);
-        assertOrder(dag, sorted);
-        Assertions.assertEquals(copy, dag);
-
-        sorted.clear();
-
-        Collections.addAll(sorted, dag.toArray(new Integer[0]));
-        Collections.reverse(sorted);
-        assertOrder(dag, sorted);
-        Assertions.assertEquals(copy, dag);
-
-        sorted.clear();
-
-        Collections.addAll(sorted, dag.toArray(new Integer[999999]));
-        sorted = sorted.subList(0, sorted.indexOf(null));
-        Collections.reverse(sorted);
-        assertOrder(dag, sorted);
-        Assertions.assertEquals(copy, dag);
+        helper.assertOrder(dag, sorted);
 
     }
 
@@ -133,7 +76,7 @@ public class TestDag {
     public void testCircularDependency() {
 
         // This DAG is guaranteed to have no circular dependencies
-        Dag<Integer> dag = populateDag();
+        Dag<Integer> dag = helper.populateDag();
 
         // Add a long chain of circular dependencies
         dag.put(0, 1);
@@ -151,7 +94,7 @@ public class TestDag {
     @Test
     public void testExtremities() {
 
-        Dag<Integer> dag = populateDag();
+        Dag<Integer> dag = helper.populateDag();
 
         Set<Integer> roots = dag.getRoots();
         for (Integer root : roots) {
@@ -168,9 +111,9 @@ public class TestDag {
     @Test
     public void testAncestry() {
 
-        Dag<Integer> dag = populateDag();
+        Dag<Integer> dag = helper.populateDag();
 
-        int node = getMiddleNode(dag);
+        int node = helper.getMiddleNode(dag);
 
         Set<Integer> ancestors = dag.getAncestors(node);
         Assertions.assertFalse(ancestors.isEmpty());
@@ -236,7 +179,12 @@ public class TestDag {
 
         // Test with add()
         dag = new HashDag<>();
-        dag.add(0);
+        Assertions.assertTrue(dag.add(0));
+        Assertions.assertFalse(dag.add(0));
+        Assertions.assertTrue(dag.put(1, 2));
+        Assertions.assertTrue(dag.put(1, 3));
+        Assertions.assertTrue(dag.put(4, 1));
+        Assertions.assertFalse(dag.put(1, 2));
         map = dag.toMap();
 
         Assertions.assertTrue(map.containsKey(0));
@@ -286,7 +234,7 @@ public class TestDag {
     @Test
     public void testSize() {
 
-        Dag<Integer> dag = populateDag();
+        Dag<Integer> dag = helper.populateDag();
 
         Assertions.assertTrue(dag.size() > 0);
         Assertions.assertFalse(dag.isEmpty());
@@ -301,7 +249,7 @@ public class TestDag {
     @Test
     public void testClone() {
 
-        Dag<Integer> dag = populateDag();
+        Dag<Integer> dag = helper.populateDag();
         Dag<Integer> clone = dag.clone();
 
         // Make sure they do not reference the same object
@@ -345,73 +293,11 @@ public class TestDag {
 
         List<Integer> sorted = dag.sort();
         Collections.reverse(sorted);
-        assertOrder(dag, sorted);
+        helper.assertOrder(dag, sorted);
 
         Assertions.assertTrue(dag.remove(null));
         Assertions.assertEquals(2, dag.size());
 
-    }
-
-    private Dag<Integer> populateDag() {
-
-        // Add a ton of parent-child relationships. Many nodes will have multiple children
-        Dag<Integer> dag = new HashDag<>();
-        int nodes = random.nextInt(5000) + 5000;
-        for (int i = 0; i < nodes; i++) {
-            // A parent will always be strictly less than its children to ensure no circular dependencies
-            int parent = random.nextInt(500);
-            int child = parent + random.nextInt(500) + 1;
-            dag.put(parent, child);
-        }
-
-        // Add some extra nodes that are guaranteed to have no parents or children
-        ArrayList<Integer> extra = IntStream.generate(() -> random.nextInt(2000) + 1000)
-                .limit(100)
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-        dag.addAll(extra);
-
-        return dag;
-
-    }
-
-    private Dag<Integer> populateDagSimple() {
-
-        Dag<Integer> dag = new HashDag<>();
-
-        dag.put(1, 5);
-        dag.put(2, 5);
-        dag.put(2, 6);
-        dag.put(3, 6);
-        dag.put(4, 6);
-        dag.put(4, 7);
-        dag.put(5, 8);
-        dag.put(6, 8);
-        dag.put(7, 8);
-        dag.put(7, 9);
-
-        return dag;
-
-    }
-
-    private void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
-        synchronized (sorted) {
-            Assertions.assertEquals(dag.getNodes().size(), sorted.size());
-            for (Integer parent : sorted) {
-                // If a parent comes after any of its children, then fail
-                dag.getChildren(parent).stream()
-                        .filter(child -> sorted.indexOf(parent) <= sorted.indexOf(child))
-                        .forEach(i -> Assertions.fail());
-            }
-        }
-    }
-
-    private int getMiddleNode(Dag<Integer> dag) {
-        int candidate = 250;
-        while (dag.getChildren(candidate).isEmpty() || dag.getParents(candidate).isEmpty()) {
-            candidate++;
-            Assertions.assertTrue(candidate < 1000);
-        }
-        return candidate;
     }
 
 }
