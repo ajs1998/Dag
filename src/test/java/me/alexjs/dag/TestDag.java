@@ -8,17 +8,16 @@ import org.junit.jupiter.api.Timeout;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.IntStream;
 
 // No test should take longer than a second
 @Timeout(1)
 public class TestDag {
 
-    private static TestHelper helper;
+    private static TestingHelper helper;
 
     @BeforeAll
     public static void init() {
-        helper = new TestHelper();
+        helper = new TestingHelper();
     }
 
     @Test

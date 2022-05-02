@@ -14,11 +14,11 @@ import java.util.List;
 @Timeout(1)
 public class TestDagIterator {
 
-    private static TestHelper helper;
+    private static TestingHelper helper;
 
     @BeforeAll
     public static void init() {
-        helper = new TestHelper();
+        helper = new TestingHelper();
     }
 
     @Test

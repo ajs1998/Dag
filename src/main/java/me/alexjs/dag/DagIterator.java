@@ -8,6 +8,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A {@link DagIterator} will return each node in a topological ordering.
@@ -21,9 +22,10 @@ public class DagIterator<T> implements Iterator<T> {
     private final Dag<T> dag;
     private final BlockingQueue<T> queue;
     private final Set<T> queued;
-    private final Lock lock;
+    private final ReentrantReadWriteLock lock;
 
     private boolean hasNext;
+    private boolean waiting = false;
 
     /**
      * Create a new {@link DagIterator} for a given {@link Dag}.
@@ -48,7 +50,7 @@ public class DagIterator<T> implements Iterator<T> {
         this.queued = new HashSet<>(leaves);
 
         // Makes sure that internal structures are unmodified between each call to hasNext() and next()
-        this.lock = new ReentrantLock(true);
+        this.lock = new ReentrantReadWriteLock(true);
 
         // If there are nodes in the queue, then we're already done iterating
         this.hasNext = !leaves.isEmpty();
@@ -58,7 +60,13 @@ public class DagIterator<T> implements Iterator<T> {
     @Override
     public boolean hasNext() {
 
-        return hasNext;
+        try {
+            lock.writeLock().lock();
+            waiting = true;
+            return hasNext;
+        }finally {
+            lock.writeLock().unlock();
+        }
 
     }
 
@@ -75,6 +83,8 @@ public class DagIterator<T> implements Iterator<T> {
             // TODO clear the queue, clear the DAG, hasNext = false
             throw new CompletionException(e);
 
+        } finally {
+            waiting = false;
         }
 
     }
@@ -88,34 +98,31 @@ public class DagIterator<T> implements Iterator<T> {
     public void pushParents(T node) {
 
         // Get the node's parents before we remove the node from the DAG
-        // Needs to happen before dag.remove()
         Set<T> enqueue = dag.getParents(node);
 
         // Remove this node from the DAG we're using to keep track of nodes to be enqueued
-        // TODO What to do with null nodes in the DAG?
-        //  I think there's no reason they couldn't be supported
         dag.remove(node);
 
-        // Here's our definition of hasNext
-        // Needs to happen after dag.remove()
-        // TODO This might need to be tweaked (also make sure the short circuiting here is right)
-        if (dag.isEmpty()) {
-            hasNext = false;
-            return;
+        lock.writeLock().lock();
+        if (waiting) {
+            if (dag.isEmpty()) {
+                hasNext = false;
+            }
+
+            // Don't enqueue nodes that have already been enqueued
+            enqueue.removeAll(queued);
+
+            // Don't enqueue parent nodes that still have children
+            enqueue.removeIf(p -> !dag.getChildren(p).isEmpty());
+
+            // Add the nodes to the queue
+            queue.addAll(enqueue);
+
+            // Continue to keep track of which nodes we have enqueued
+            queued.addAll(enqueue);
+
         }
-
-        // Don't enqueue nodes that have already been enqueued
-        enqueue.removeAll(queued);
-
-        // Don't enqueue parent nodes that still have children
-        // Needs to happen after dag.remove()
-        enqueue.removeIf(p -> !dag.getChildren(p).isEmpty());
-
-        // Add the nodes to the queue
-        queue.addAll(enqueue);
-
-        // Continue to keep track of which nodes we have enqueued
-        queued.addAll(enqueue);
+        lock.writeLock().lock();
 
     }
 

@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-public class TestHelper {
+public class TestingHelper {
 
     private final Random random;
 
-    public TestHelper() {
+    public TestingHelper() {
 
         // I want to give these tests the opportunity to flake
         // If tests flake because the random numbers it generates are just right,
