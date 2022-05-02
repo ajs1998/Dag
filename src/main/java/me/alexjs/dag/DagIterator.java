@@ -1,13 +1,10 @@
 package me.alexjs.dag;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -21,11 +18,11 @@ public class DagIterator<T> implements Iterator<T> {
 
     private final Dag<T> dag;
     private final BlockingQueue<T> queue;
-    private final Set<T> queued;
-    private final ReentrantReadWriteLock lock;
+    private final Map<T, Set<T>> parents;
+    private final Lock w;
+    private final Lock r;
 
-    private boolean hasNext;
-    private boolean waiting = false;
+    private boolean complete;
 
     /**
      * Create a new {@link DagIterator} for a given {@link Dag}.
@@ -37,92 +34,81 @@ public class DagIterator<T> implements Iterator<T> {
      */
     public DagIterator(final Dag<T> dag) {
 
-        Dag<T> copy = dag.clone();
-        Set<T> leaves = copy.getLeaves();
+        this.dag = dag.clone();
+        this.queue = new LinkedBlockingQueue<>();
+        this.parents = new HashMap<>();
 
-        // Save a copy of the dag so the original DAG is not modified
-        this.dag = copy;
+        // Cache the parents of each node for this DAG
+        for (T node : this.dag.getNodes()) {
+            this.parents.put(node, this.dag.getParents(node));
+        }
 
-        // Otherwise, add the leaves to the queue of nodes that are ready to be visited
-        this.queue = new LinkedBlockingQueue<>(leaves);
+        // Get the set of leaves for this dag
+        Set<T> leaves = this.dag.getLeaves();
 
-        // Create a set of nodes representing nodes which have already been added to the queue
-        this.queued = new HashSet<>(leaves);
+        // If there are no leaves, then there are no nodes to visit
+        complete = leaves.isEmpty();
 
-        // Makes sure that internal structures are unmodified between each call to hasNext() and next()
-        this.lock = new ReentrantReadWriteLock(true);
+        if (!complete) {
 
-        // If there are nodes in the queue, then we're already done iterating
-        this.hasNext = !leaves.isEmpty();
+            // Immediately "visit" the leaves
+            this.queue.addAll(leaves);
+            this.dag.removeAll(leaves);
+
+        }
+
+        // Create a read/write lock for the two methods in here to use
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        this.w = lock.writeLock();
+        this.r = lock.readLock();
 
     }
 
     @Override
     public boolean hasNext() {
 
-        try {
-            lock.writeLock().lock();
-            waiting = true;
-            return hasNext;
-        }finally {
-            lock.writeLock().unlock();
-        }
+        return !complete;
 
     }
 
     @Override
     public T next() {
 
+        if (complete) {
+            return null;
+        }
+
+        T node;
         try {
-
-            // Retrieve and remove a node off the queue
-            return queue.take();
-
+            node = queue.take();
         } catch (InterruptedException e) {
-
             // TODO clear the queue, clear the DAG, hasNext = false
             throw new CompletionException(e);
-
-        } finally {
-            waiting = false;
         }
+
+        r.lock();
+        if (dag.isEmpty() && queue.isEmpty()) {
+            complete = true;
+        }
+        r.unlock();
+
+        return node;
 
     }
 
-    /**
-     * Push the parents of a given {@code node} to this iterator.
-     * This is used to ensure nodes are only visited once all their children have already been visited.
-     *
-     * @param node the node whose parents need to be enqueued
-     */
     public void pushParents(T node) {
 
-        // Get the node's parents before we remove the node from the DAG
-        Set<T> enqueue = dag.getParents(node);
+        w.lock();
 
-        // Remove this node from the DAG we're using to keep track of nodes to be enqueued
-        dag.remove(node);
+        Set<T> enqueue = parents.get(node);
 
-        lock.writeLock().lock();
-        if (waiting) {
-            if (dag.isEmpty()) {
-                hasNext = false;
-            }
+        enqueue.retainAll(dag.getNodes());
+        enqueue.removeIf(p -> !dag.getChildren(p).isEmpty());
 
-            // Don't enqueue nodes that have already been enqueued
-            enqueue.removeAll(queued);
+        queue.addAll(enqueue);
+        dag.removeAll(enqueue);
 
-            // Don't enqueue parent nodes that still have children
-            enqueue.removeIf(p -> !dag.getChildren(p).isEmpty());
-
-            // Add the nodes to the queue
-            queue.addAll(enqueue);
-
-            // Continue to keep track of which nodes we have enqueued
-            queued.addAll(enqueue);
-
-        }
-        lock.writeLock().lock();
+        w.unlock();
 
     }
 

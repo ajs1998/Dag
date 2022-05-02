@@ -48,7 +48,6 @@ public class DagVisitor<T> implements Supplier<Optional<T>> {
         this.w = lock.writeLock();
         this.r = lock.readLock();
 
-
     }
 
     @Override

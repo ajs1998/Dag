@@ -110,19 +110,8 @@ public class TestDag {
         Assertions.assertTrue(parents.isEmpty());
         Assertions.assertTrue(children.isEmpty());
 
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-
         DagIterator<Integer> it = new DagIterator<>(dag);
-        while (it.hasNext()) {
-            // Peek a node in the iterator
-            Integer i = it.next();
-
-            // Submit a task for this node
-            executorService.submit(() -> {
-                Assertions.fail("This shouldn't happen");
-                it.pushParents(i);
-            });
-        }
+        Assertions.assertFalse(it.hasNext());
 
     }
 

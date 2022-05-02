@@ -19,6 +19,33 @@ public class TestDagTraversal {
     }
 
     @Test
+    public void testMultiThreadIterator() throws InterruptedException {
+
+        Dag<Integer> dag = helper.populateDag();
+        List<Integer> sorted = new LinkedList<>();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+        DagIterator<Integer> it = new DagIterator<>(dag);
+        while (it.hasNext()) {
+            Integer i = it.next();
+            executorService.submit(() -> {
+                synchronized (sorted) {
+                    sorted.add(i);
+                }
+                it.pushParents(i);
+            });
+        }
+
+        executorService.shutdown();
+
+        Assertions.assertTrue(executorService.awaitTermination(1, TimeUnit.SECONDS));
+
+        helper.assertOrder(dag, sorted);
+
+    }
+
+    @Test
     public void testMultiThreadTraverse() throws InterruptedException {
 
         Dag<Integer> dag = helper.populateDag();
