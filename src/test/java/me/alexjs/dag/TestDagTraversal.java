@@ -1,24 +1,69 @@
 package me.alexjs.dag;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 // No test should take longer than a second
 @Timeout(1)
-public class TestDagIterator {
+public class TestDagTraversal {
 
     private static TestingHelper helper;
 
     @BeforeAll
     public static void init() {
         helper = new TestingHelper();
+    }
+
+    @Test
+    public void testMultiThreadTraverse() throws InterruptedException {
+
+        Dag<Integer> dag = helper.populateDag();
+        DagTraverser<Integer> traverser = new DagTraverser<>(dag);
+        List<Integer> sorted = new LinkedList<>();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+        Optional<Integer> optional;
+        while ((optional = traverser.get()).isPresent()) {
+            final int i = optional.get();
+            executorService.submit(() -> {
+                synchronized (sorted) {
+                    sorted.add(i);
+                }
+                traverser.done(i);
+            });
+        }
+
+        executorService.shutdown();
+
+        Assertions.assertTrue(executorService.awaitTermination(1, TimeUnit.SECONDS));
+
+        helper.assertOrder(dag, sorted);
+
+    }
+
+    @Test
+    public void testSingleThreadTraverse() {
+
+        Dag<Integer> dag = helper.populateDag();
+        DagTraverser<Integer> traverser = new DagTraverser<>(dag);
+        List<Integer> sorted = new LinkedList<>();
+
+        Optional<Integer> optional;
+        while ((optional = traverser.get()).isPresent()) {
+            final int i = optional.get();
+            sorted.add(i);
+            traverser.done(i);
+        }
+
+        helper.assertOrder(dag, sorted);
+
     }
 
     @Test

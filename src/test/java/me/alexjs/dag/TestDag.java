@@ -21,45 +21,6 @@ public class TestDag {
     }
 
     @Test
-    public void testDagTraversal() {
-
-        Dag<Integer> dag = helper.populateDagSimple();
-        Dag<Integer> copy = dag.clone();
-
-        List<Integer> sorted = new LinkedList<>();
-
-        DagIterator<Integer> it = new DagIterator<>(dag);
-        while (it.hasNext()) {
-            int i = it.next();
-            sorted.add(i);
-            it.pushParents(i);
-        }
-
-        // Make sure the original DAG is unmodified by the iterator
-        Assertions.assertEquals(copy, dag);
-        helper.assertOrder(dag, sorted);
-
-        sorted.clear();
-
-        // TODO Use more than one thread
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-
-        DagIterator<Integer> it2 = new DagIterator<>(dag);
-        while (it2.hasNext()) {
-            final int i = it2.next();
-            executorService.submit(() -> {
-                synchronized (sorted) {
-                    sorted.add(i);
-                }
-                it2.pushParents(i);
-            });
-        }
-
-        helper.assertOrder(dag, sorted);
-
-    }
-
-    @Test
     public void testSort() {
 
         Dag<Integer> dag = helper.populateDag();

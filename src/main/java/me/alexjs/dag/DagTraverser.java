@@ -15,6 +15,7 @@ public class DagTraverser<T> implements Supplier<Optional<T>> {
     private final BlockingQueue<T> queue;
     private final Map<T, Set<T>> parents;
     private final Lock w;
+    private final Lock r;
 
     private boolean complete;
 
@@ -24,7 +25,9 @@ public class DagTraverser<T> implements Supplier<Optional<T>> {
         this.queue = new LinkedBlockingQueue<>();
         this.parents = new HashMap<>();
 
-        this.w = new ReentrantLock();
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        this.w = lock.writeLock();
+        this.r = lock.readLock();
 
         Set<T> leaves = this.dag.getLeaves();
         if (leaves.isEmpty()) {
@@ -45,7 +48,7 @@ public class DagTraverser<T> implements Supplier<Optional<T>> {
     @Override
     public Optional<T> get() {
 
-        if (complete && queue.isEmpty()) {
+        if (complete) {
             return Optional.empty();
         }
 
@@ -57,13 +60,11 @@ public class DagTraverser<T> implements Supplier<Optional<T>> {
             throw new CompletionException(e);
         }
 
-        w.lock();
-
-        if (dag.isEmpty()) {
+        r.lock();
+        if (dag.isEmpty() && queue.isEmpty()) {
             complete = true;
         }
-
-        w.unlock();
+        r.unlock();
 
         return Optional.of(node);
 
@@ -74,22 +75,17 @@ public class DagTraverser<T> implements Supplier<Optional<T>> {
 
     public void done(T node) {
 
-        try {
+        w.lock();
 
-            w.lock();
+        Set<T> enqueue = parents.get(node);
 
-            Set<T> enqueue = parents.get(node);
-            enqueue.retainAll(dag.getNodes());
-            enqueue.removeIf(p -> !dag.getChildren(p).isEmpty());
+        enqueue.retainAll(dag.getNodes());
+        enqueue.removeIf(p -> !dag.getChildren(p).isEmpty());
 
-            queue.addAll(enqueue);
-            dag.removeAll(enqueue);
+        queue.addAll(enqueue);
+        dag.removeAll(enqueue);
 
-        } finally {
-
-            w.unlock();
-
-        }
+        w.unlock();
 
     }
 
