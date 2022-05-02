@@ -5,7 +5,9 @@ import org.junit.jupiter.api.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 // No test should take longer than a second
 @Timeout(1)
@@ -18,21 +20,19 @@ public class TestDagTraversal {
         helper = new TestingHelper();
     }
 
-    @Test
-    public void testMultiThreadIterator() throws InterruptedException {
+    @RepeatedTest(100)
+    public void testMultiThreadTraverse() throws InterruptedException {
 
         Dag<Integer> dag = helper.populateDag();
-        List<Integer> sorted = new LinkedList<>();
+        Queue<Integer> sorted = new LinkedBlockingQueue<>();
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
         DagIterator<Integer> it = new DagIterator<>(dag);
         while (it.hasNext()) {
-            Integer i = it.next();
+            final Integer i = it.next();
             executorService.submit(() -> {
-                synchronized (sorted) {
-                    sorted.add(i);
-                }
+                sorted.add(i);
                 it.pushParents(i);
             });
         }
@@ -41,57 +41,28 @@ public class TestDagTraversal {
 
         Assertions.assertTrue(executorService.awaitTermination(1, TimeUnit.SECONDS));
 
-        helper.assertOrder(dag, sorted);
+        helper.assertOrder(dag, new ArrayList<>(sorted));
 
     }
 
-    @Test
-    public void testMultiThreadTraverse() throws InterruptedException {
-
-        Dag<Integer> dag = helper.populateDag();
-        DagVisitor<Integer> traverser = new DagVisitor<>(dag);
-        List<Integer> sorted = new LinkedList<>();
-
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-
-        Optional<Integer> optional;
-        while ((optional = traverser.get()).isPresent()) {
-            final int i = optional.get();
-            executorService.submit(() -> {
-                synchronized (sorted) {
-                    sorted.add(i);
-                }
-                traverser.done(i);
-            });
-        }
-
-        executorService.shutdown();
-
-        Assertions.assertTrue(executorService.awaitTermination(1, TimeUnit.SECONDS));
-
-        helper.assertOrder(dag, sorted);
-
-    }
-
-    @Test
+    @RepeatedTest(50)
     public void testSingleThreadTraverse() {
 
         Dag<Integer> dag = helper.populateDag();
-        DagVisitor<Integer> traverser = new DagVisitor<>(dag);
         List<Integer> sorted = new LinkedList<>();
 
-        Optional<Integer> optional;
-        while ((optional = traverser.get()).isPresent()) {
-            final int i = optional.get();
+        DagIterator<Integer> it = new DagIterator<>(dag);
+        while (it.hasNext()) {
+            int i = it.next();
             sorted.add(i);
-            traverser.done(i);
+            it.pushParents(i);
         }
 
         helper.assertOrder(dag, sorted);
 
     }
 
-    @Test
+    @RepeatedTest(50)
     public void testWhileIterator() {
 
         Dag<Integer> dag = helper.populateDag();
@@ -111,7 +82,7 @@ public class TestDagTraversal {
 
     }
 
-    @Test
+    @RepeatedTest(50)
     public void testForIterator() {
 
         Dag<Integer> dag = helper.populateDag();
@@ -128,7 +99,7 @@ public class TestDagTraversal {
 
     }
 
-    @Test
+    @RepeatedTest(50)
     public void testCollectionAddAll() {
 
         Dag<Integer> dag = helper.populateDag();
@@ -143,7 +114,7 @@ public class TestDagTraversal {
 
     }
 
-    @Test
+    @RepeatedTest(50)
     public void testToArray() {
 
         Dag<Integer> dag = helper.populateDag();

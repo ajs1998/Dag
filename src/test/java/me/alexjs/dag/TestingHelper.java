@@ -24,13 +24,13 @@ public class TestingHelper {
     }
 
     public void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
-        synchronized (sorted) {
-            Assertions.assertEquals(dag.getNodes().size(), sorted.size());
-            for (Integer parent : sorted) {
-                // If a parent comes after any of its children, then fail
-                dag.getChildren(parent).stream()
-                        .filter(child -> sorted.indexOf(parent) <= sorted.indexOf(child))
-                        .forEach(i -> Assertions.fail());
+        Assertions.assertEquals(dag.getNodes().size(), sorted.size());
+        for (Integer parent : sorted) {
+            // If a parent comes before any of its children, then fail
+            for (Integer child : dag.getChildren(parent)) {
+                if (sorted.indexOf(parent) <= sorted.indexOf(child)) {
+                    Assertions.fail();
+                }
             }
         }
     }
