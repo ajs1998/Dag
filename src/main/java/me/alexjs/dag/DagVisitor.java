@@ -5,11 +5,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
-public class DagTraverser<T> implements Supplier<Optional<T>> {
+public class DagVisitor<T> implements Supplier<Optional<T>> {
 
     private final Dag<T> dag;
     private final BlockingQueue<T> queue;
@@ -19,29 +18,36 @@ public class DagTraverser<T> implements Supplier<Optional<T>> {
 
     private boolean complete;
 
-    public DagTraverser(Dag<T> dag) {
+    public DagVisitor(Dag<T> dag) {
 
         this.dag = dag.clone();
         this.queue = new LinkedBlockingQueue<>();
         this.parents = new HashMap<>();
 
-        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        this.w = lock.writeLock();
-        this.r = lock.readLock();
-
-        Set<T> leaves = this.dag.getLeaves();
-        if (leaves.isEmpty()) {
-            complete = true;
-            return;
-        }
-
-        // cache all the parents
+        // Cache the parents of each node for this DAG
         for (T node : this.dag.getNodes()) {
             this.parents.put(node, this.dag.getParents(node));
         }
 
-        this.queue.addAll(leaves);
-        this.dag.removeAll(leaves);
+        // Get a set of the leaves of this dag
+        Set<T> leaves = this.dag.getLeaves();
+
+        // If there are no leaves, then there are no nodes to visit
+        complete = leaves.isEmpty();
+
+        if (!complete) {
+
+            // Immediately "visit" the leaves
+            this.queue.addAll(leaves);
+            this.dag.removeAll(leaves);
+
+        }
+
+        // Create a read/write lock for the two methods in here to use
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        this.w = lock.writeLock();
+        this.r = lock.readLock();
+
 
     }
 

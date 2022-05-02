@@ -6,8 +6,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 // No test should take longer than a second
 @Timeout(1)
@@ -24,7 +22,7 @@ public class TestDagTraversal {
     public void testMultiThreadTraverse() throws InterruptedException {
 
         Dag<Integer> dag = helper.populateDag();
-        DagTraverser<Integer> traverser = new DagTraverser<>(dag);
+        DagVisitor<Integer> traverser = new DagVisitor<>(dag);
         List<Integer> sorted = new LinkedList<>();
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
@@ -52,7 +50,7 @@ public class TestDagTraversal {
     public void testSingleThreadTraverse() {
 
         Dag<Integer> dag = helper.populateDag();
-        DagTraverser<Integer> traverser = new DagTraverser<>(dag);
+        DagVisitor<Integer> traverser = new DagVisitor<>(dag);
         List<Integer> sorted = new LinkedList<>();
 
         Optional<Integer> optional;
