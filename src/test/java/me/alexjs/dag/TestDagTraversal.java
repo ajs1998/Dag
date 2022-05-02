@@ -1,16 +1,21 @@
 package me.alexjs.dag;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 // No test should take longer than a second
-@Timeout(1)
+//@Timeout(1)
 public class TestDagTraversal {
 
     private static TestingHelper helper;
@@ -20,20 +25,23 @@ public class TestDagTraversal {
         helper = new TestingHelper();
     }
 
-    @RepeatedTest(100)
+    @RepeatedTest(200)
     public void testMultiThreadTraverse() throws InterruptedException {
 
-        Dag<Integer> dag = helper.populateDag();
-        Queue<Integer> sorted = new LinkedBlockingQueue<>();
+        Dag<Integer> dag = helper.populateFlakyDag();
+        BlockingQueue<Integer> sorted = new LinkedBlockingQueue<>();
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
         DagIterator<Integer> it = new DagIterator<>(dag);
         while (it.hasNext()) {
-            final Integer i = it.next();
+            final int i = it.next();
             executorService.submit(() -> {
-                sorted.add(i);
-                it.pushParents(i);
+                try {
+                    sorted.add(i);
+                } finally {
+                    it.pushParents(i);
+                }
             });
         }
 
@@ -41,7 +49,42 @@ public class TestDagTraversal {
 
         Assertions.assertTrue(executorService.awaitTermination(1, TimeUnit.SECONDS));
 
-        helper.assertOrder(dag, new ArrayList<>(sorted));
+        helper.assertOrder(dag, new LinkedList<>(sorted));
+
+    }
+
+    @Test
+    public void testTraversalAbort() throws InterruptedException {
+
+        Dag<Integer> dag = helper.populateDag();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+        DagIterator<Integer> it = new DagIterator<>(dag);
+        AtomicReference<Throwable> throwable = new AtomicReference<>();
+        AtomicBoolean aborted = new AtomicBoolean(false);
+
+        while (it.hasNext() && !aborted.get()) {
+            final int i = it.next();
+            executorService.submit(() -> {
+                try {
+                    if (true) {
+                        throw new RuntimeException("uh oh");
+                    }
+                    it.pushParents(i);
+                } catch (Throwable t) {
+                    throwable.compareAndSet(null, t);
+                    aborted.set(true);
+                }
+            });
+        }
+
+        executorService.shutdown();
+
+        Assertions.assertTrue(executorService.awaitTermination(1, TimeUnit.SECONDS));
+
+        Assertions.assertTrue(executorService.isShutdown());
+        Assertions.assertTrue(executorService.isTerminated());
 
     }
 

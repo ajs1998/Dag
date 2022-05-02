@@ -22,8 +22,6 @@ public class DagIterator<T> implements Iterator<T> {
     private final Lock w;
     private final Lock r;
 
-    private boolean complete;
-
     /**
      * Create a new {@link DagIterator} for a given {@link Dag}.
      * <p>
@@ -47,14 +45,8 @@ public class DagIterator<T> implements Iterator<T> {
         Set<T> leaves = this.dag.getLeaves();
 
         // If there are no leaves, then there are no nodes to visit
-        complete = leaves.isEmpty();
-
-        if (!complete) {
-
-            // Immediately "visit" the leaves
-            this.queue.addAll(leaves);
-            this.dag.removeAll(leaves);
-
+        if (!leaves.isEmpty()) {
+            visit(leaves);
         }
 
         // Create a read/write lock for the two methods in here to use
@@ -67,32 +59,28 @@ public class DagIterator<T> implements Iterator<T> {
     @Override
     public boolean hasNext() {
 
-        return !complete;
+        try {
+            r.lock();
+            return !queue.isEmpty() || !dag.isEmpty();
+        } finally {
+            r.unlock();
+        }
 
     }
 
     @Override
     public T next() {
 
-        if (complete) {
-            return null;
-        }
-
-        T node;
         try {
-            node = queue.take();
+
+            return queue.take();
+
         } catch (InterruptedException e) {
+
             // TODO clear the queue, clear the DAG, hasNext = false
             throw new CompletionException(e);
-        }
 
-        r.lock();
-        if (dag.isEmpty() && queue.isEmpty()) {
-            complete = true;
         }
-        r.unlock();
-
-        return node;
 
     }
 
@@ -105,11 +93,15 @@ public class DagIterator<T> implements Iterator<T> {
         enqueue.retainAll(dag.getNodes());
         enqueue.removeIf(p -> !dag.getChildren(p).isEmpty());
 
-        queue.addAll(enqueue);
-        dag.removeAll(enqueue);
+        visit(enqueue);
 
         w.unlock();
 
+    }
+
+    private void visit(Collection<T> enqueue) {
+        queue.addAll(enqueue);
+        dag.removeAll(enqueue);
     }
 
 }

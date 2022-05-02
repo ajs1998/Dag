@@ -84,5 +84,18 @@ public class TestingHelper {
         return dag;
 
     }
+    public Dag<Integer> populateFlakyDag() {
+
+        Dag<Integer> dag = new HashDag<>();
+
+        // If I change this to 5, it does not flake nearly as often
+        dag.add(1);
+
+        dag.put(2, 3);
+        dag.put(2, 4);
+
+        return dag;
+
+    }
 
 }
