@@ -126,14 +126,14 @@ public class HashDag<T> implements Dag<T> {
      */
     @Override
     public boolean remove(Object node) {
-        Collection<T> removed = map.remove(node);
+        boolean removed = map.remove(node) != null;
         for (T parent : map.keySet()) {
             Collection<T> children = map.get(parent);
             if (children != null) {
-                children.remove(node);
+                removed |= children.remove(node);
             }
         }
-        return removed != null;
+        return removed;
     }
 
     /**

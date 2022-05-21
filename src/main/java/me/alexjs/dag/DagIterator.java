@@ -5,6 +5,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -19,11 +20,10 @@ public class DagIterator<T> implements Iterator<T> {
     private final Dag<T> dag;
     private final BlockingQueue<T> queue;
     private final Map<T, Set<T>> parents;
-    private final Lock w;
-    private final Lock r;
+    private final Lock lock;
 
     /**
-     * Create a new {@link DagIterator} for a given {@link Dag}.
+     * Create a new {@link DagIterator} for a given {@link Dag}
      * <p>
      * This iterator will return each node such that {@link DagIterator#pushParents} has already been called for all of
      * its children nodes.
@@ -45,14 +45,11 @@ public class DagIterator<T> implements Iterator<T> {
         Set<T> leaves = this.dag.getLeaves();
 
         // If there are no leaves, then there are no nodes to visit
-        if (!leaves.isEmpty()) {
+        if (!queue.isEmpty() || !this.dag.isEmpty()) {
             visit(leaves);
         }
 
-        // Create a read/write lock for the two methods in here to use
-        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        this.w = lock.writeLock();
-        this.r = lock.readLock();
+        this.lock = new ReentrantLock(true);
 
     }
 
@@ -60,10 +57,10 @@ public class DagIterator<T> implements Iterator<T> {
     public boolean hasNext() {
 
         try {
-            r.lock();
+            lock.lock();
             return !queue.isEmpty() || !dag.isEmpty();
         } finally {
-            r.unlock();
+            lock.unlock();
         }
 
     }
@@ -86,7 +83,7 @@ public class DagIterator<T> implements Iterator<T> {
 
     public void pushParents(T node) {
 
-        w.lock();
+        lock.lock();
 
         Set<T> enqueue = parents.get(node);
 
@@ -95,7 +92,7 @@ public class DagIterator<T> implements Iterator<T> {
 
         visit(enqueue);
 
-        w.unlock();
+        lock.unlock();
 
     }
 

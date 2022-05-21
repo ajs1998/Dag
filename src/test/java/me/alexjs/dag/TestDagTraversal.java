@@ -1,18 +1,11 @@
 package me.alexjs.dag;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 // No test should take longer than a second
 //@Timeout(1)
@@ -20,12 +13,18 @@ public class TestDagTraversal {
 
     private static TestingHelper helper;
 
+    public static void main(String[] args) throws InterruptedException {
+        init();
+        TestDagTraversal testDagTraversal = new TestDagTraversal();
+        testDagTraversal.testMultiThreadTraverse();
+    }
+
     @BeforeAll
     public static void init() {
         helper = new TestingHelper();
     }
 
-    @RepeatedTest(200)
+    @RepeatedTest(2)
     public void testMultiThreadTraverse() throws InterruptedException {
 
         Dag<Integer> dag = helper.populateFlakyDag();

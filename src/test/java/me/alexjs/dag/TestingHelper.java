@@ -1,5 +1,6 @@
 package me.alexjs.dag;
 
+import jdk.jfr.BooleanFlag;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
