@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -17,9 +18,11 @@ import java.util.function.Consumer;
  * A helper class to easily traverse the nodes of a DAG with multiple threads.
  * Each node's task is only submitted for execution once all its children have finished execution, or if it has no
  * children.
+ * If the task applied to any node throws an exception, the {@link ExecutorService} will be immediately shut down, and
+ * {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return false.
  *
  * @param <T> the node type. This type parameter is not useful after the constructor is called, so you could use
- *            {@code DagTraversalTask<?>} as your variable type.Ω
+ *            {@code DagTraversalTask<?>} as your variable type.
  */
 public class DagTraversalTask<T> {
 
@@ -28,6 +31,7 @@ public class DagTraversalTask<T> {
     private final ListeningExecutorService executorService;
     private final Map<T, Set<T>> parents;
     private final Lock lock;
+    private final AtomicBoolean failed;
 
     /**
      * Create a task that traverses a DAG with an {@link java.util.concurrent.ExecutorService}
@@ -46,6 +50,7 @@ public class DagTraversalTask<T> {
         this.executorService = MoreExecutors.listeningDecorator(executorService);
         this.parents = new HashMap<>();
         this.lock = new ReentrantLock(true);
+        this.failed = new AtomicBoolean();
 
         // Cache the parents of each node for this DAG
         this.dag.getNodes().forEach(node -> this.parents.put(node, this.dag.getParents(node)));
@@ -72,30 +77,40 @@ public class DagTraversalTask<T> {
      * @throws InterruptedException if interrupted while waiting
      */
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        return executorService.awaitTermination(timeout, unit);
+        return executorService.awaitTermination(timeout, unit) && !failed.get();
     }
 
     private void visit(Collection<T> nodes) {
 
         for (final T node : nodes) {
-            executorService.submit(() -> task.accept(node))
-                    .addListener(() -> {
-                        lock.lock();
+            try {
+                executorService.submit(() -> {
+                            try {
+                                task.accept(node);
+                            } catch (Throwable t) {
+                                failed.set(true);
+                                executorService.shutdownNow();
+                            }
+                        })
+                        .addListener(() -> {
+                            lock.lock();
 
-                        dag.remove(node);
-                        if (dag.isEmpty()) {
-                            executorService.shutdown();
-                        }
+                            dag.remove(node);
+                            if (dag.isEmpty()) {
+                                executorService.shutdown();
+                            }
 
-                        Set<T> parents = this.parents.get(node);
-                        parents.retainAll(dag.getNodes());
-                        parents.removeIf(p -> !dag.getChildren(p).isEmpty());
+                            Set<T> parents = this.parents.get(node);
+                            parents.retainAll(dag.getNodes());
+                            parents.removeIf(p -> !dag.getChildren(p).isEmpty());
 
-                        lock.unlock();
+                            lock.unlock();
 
-                        visit(parents);
+                            visit(parents);
 
-                    }, MoreExecutors.directExecutor());
+                        }, MoreExecutors.directExecutor());
+            } catch (Throwable ignore) {
+            }
         }
 
     }

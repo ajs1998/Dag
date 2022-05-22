@@ -3,8 +3,6 @@ package me.alexjs.dag;
 import org.junit.jupiter.api.*;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 // No test should take longer than a second
 @Timeout(1)
@@ -24,7 +22,7 @@ public class TestDag {
 
         List<Integer> sorted = dag.sort();
 
-        helper.assertOrder(dag, sorted);
+        helper.assertOrder(dag, sorted, true);
 
     }
 

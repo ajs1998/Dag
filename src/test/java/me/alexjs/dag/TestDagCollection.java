@@ -112,7 +112,7 @@ public class TestDagCollection {
         Assertions.assertEquals(3, dag.size());
 
         List<Integer> sorted = dag.sort();
-        helper.assertOrder(dag, sorted);
+        helper.assertOrder(dag, sorted, true);
 
         Assertions.assertTrue(dag.remove(null));
         Assertions.assertEquals(2, dag.size());

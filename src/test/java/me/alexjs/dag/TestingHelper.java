@@ -1,6 +1,5 @@
 package me.alexjs.dag;
 
-import jdk.jfr.BooleanFlag;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
@@ -24,12 +23,12 @@ public class TestingHelper {
 
     }
 
-    public void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
-        Assertions.assertEquals(dag.getNodes().size(), sorted.size());
+    public void assertOrder(Dag<Integer> dag, List<Integer> sorted, boolean result) {
+        Assertions.assertEquals(result, dag.getNodes().size() == sorted.size());
         for (Integer parent : sorted) {
             // If a parent comes before any of its children, then fail
             for (Integer child : dag.getChildren(parent)) {
-                if (sorted.indexOf(parent) <= sorted.indexOf(child)) {
+                if (result && sorted.indexOf(parent) <= sorted.indexOf(child)) {
                     Assertions.fail();
                 }
             }
