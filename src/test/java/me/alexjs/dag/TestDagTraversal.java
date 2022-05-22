@@ -141,4 +141,18 @@ public class TestDagTraversal {
 
     }
 
+    @RepeatedTest(50)
+    public void testTraverseEmptyDag() throws InterruptedException {
+
+        Dag<Integer> dag = new HashDag<>();
+        List<Integer> sorted = new LinkedList<>();
+
+        DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, sorted::add, Executors.newSingleThreadExecutor());
+        Assertions.assertTrue(traverser.awaitTermination(1, TimeUnit.SECONDS));
+
+        Assertions.assertTrue(sorted.isEmpty());
+
+    }
+
+
 }
