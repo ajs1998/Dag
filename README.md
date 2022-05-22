@@ -22,13 +22,13 @@ dag.put("Joe", "Alex");
 dag.add("Clare");
 dag.add("Sarah");
 
-// Find a topologically sorted list of the nodes
-// Ex: ["Sarah", "Clare", "Dorothy", "Joe", "Shelby", "Alex"]
+// Find a reverse-topologically sorted list of the nodes
+// Ex: ["Alex", "Joe", "Sarah", "Shelby", "Dorothy", "Clare"]
 List<String> sorted = dag.sort();
 
 // Find the root nodes of the DAG
 // Ex: ["Dorothy", "Joe", "Clare", "Sarah"]
-Set<String> roots= dag.getRoots();
+Set<String> roots = dag.getRoots();
 
 // Find the leaf nodes of the DAG
 // Ex: ["Alex", "Clare", "Sarah"]
@@ -59,13 +59,16 @@ Dag<String> copy = dag.clone();
 
 ### DAG Traversal
 
-You can use `DagUtil.traverse()` to run a task on each node in multiple threads. Each node is only visited once all of
+You can use a `DagTraversalTask` to run a task on each node in multiple threads. Each node is only visited once all of
 its children have been visited. This is useful for running complex multithreaded pipelines on nodes with shared
-dependencies
+dependencies.
 
 ```java
+ExecutorService executorService = Executors.newFixedThreadPool(3);
+
 List<Integer> result = new LinkedList<>();
-DagUtil.traverse(dag, i -> result.add(i), executorService);
+DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, result::add, executorService);
+boolean success = traverser.awaitTermination(10, TimeUnit.MINUTES));
 ```
 
 ## How do I get it?
