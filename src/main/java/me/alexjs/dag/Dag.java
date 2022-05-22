@@ -34,9 +34,9 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     boolean putAll(T parent, Collection<T> children);
 
     /**
-     * Order the nodes of this DAG such that all of a node's children come after it in the ordering
+     * Order the nodes of this DAG such that all of a node's parents come after it in the ordering
      *
-     * @return a topologically sorted list of nodes, or {@code null} if there's a circular dependency
+     * @return a list of nodes in reverse-topological order, or {@code null} if there's a circular dependency
      * @see <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>
      */
     List<T> sort();

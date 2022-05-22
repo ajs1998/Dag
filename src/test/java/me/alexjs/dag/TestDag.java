@@ -23,7 +23,6 @@ public class TestDag {
         Dag<Integer> dag = helper.populateDag();
 
         List<Integer> sorted = dag.sort();
-        Collections.reverse(sorted);
 
         helper.assertOrder(dag, sorted);
 

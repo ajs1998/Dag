@@ -14,10 +14,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
- * TODO
- * @param <T>
+ * A helper class to easily traverse the nodes of a DAG with multiple threads.
+ * Each node's task is only submitted for execution once all its children have finished execution, or if it has no
+ * children.
+ *
+ * @param <T> the node type. This type parameter is not useful after the constructor is called, so you could use
+ *            {@code DagTraversalTask<?>} as your variable type.Ω
  */
-public class DagTraverser<T> {
+public class DagTraversalTask<T> {
 
     private final Dag<T> dag;
     private final Consumer<T> task;
@@ -26,12 +30,16 @@ public class DagTraverser<T> {
     private final Lock lock;
 
     /**
-     * TODO
-     * @param dag
-     * @param task
-     * @param executorService
+     * Create a task that traverses a DAG with an {@link java.util.concurrent.ExecutorService}
+     * <p>
+     * The nodes will be traversed in reverse-topological order,
+     * such that no node is visited until all its children have been visited.
+     *
+     * @param dag             the DAG to traverse
+     * @param task            the task to apply to each node
+     * @param executorService the {@link ExecutorService} to submit these tasks to
      */
-    public DagTraverser(Dag<T> dag, Consumer<T> task, ExecutorService executorService) {
+    public DagTraversalTask(Dag<T> dag, Consumer<T> task, ExecutorService executorService) {
 
         this.dag = dag.clone();
         this.task = task;
@@ -55,13 +63,15 @@ public class DagTraverser<T> {
     }
 
     /**
-     * TODO
-     * @param timeout
-     * @param unit
-     * @return
-     * @throws InterruptedException
+     * Blocks until all nodes have been traversed, or the timeout occurs, or the current thread is interrupted,
+     * whichever happens first.
+     *
+     * @param timeout the maximum time to wait
+     * @param unit    the time unit of the timeout argument
+     * @return {@code true} if the traversal is terminated and {@code false} if the timeout elapsed before termination
+     * @throws InterruptedException if interrupted while waiting
      */
-    public boolean get(long timeout, TimeUnit unit) throws InterruptedException {
+    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         return executorService.awaitTermination(timeout, unit);
     }
 

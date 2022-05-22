@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.List;
 
 public class TestDagCollection {
@@ -113,7 +112,6 @@ public class TestDagCollection {
         Assertions.assertEquals(3, dag.size());
 
         List<Integer> sorted = dag.sort();
-        Collections.reverse(sorted);
         helper.assertOrder(dag, sorted);
 
         Assertions.assertTrue(dag.remove(null));

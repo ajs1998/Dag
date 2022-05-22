@@ -3,17 +3,23 @@ package me.alexjs.dag;
 import java.util.*;
 
 /**
- * An implementation of {@link Dag}.
- * The underlying structure is a {@link HashMap}.
+ * An implementation of {@link Dag} where the underlying structure is a {@link HashMap}
+ * <p>
+ * This implementation was created with the intent to be used for traversing dependencies.
+ * For this reason, (parent, child) relationships are reversed compared to how they're described on Wikipedia.
+ * It's easier to determine "A depends on B[]" than "B is connected to A[]".
+ * The {@link HashDag#sort()} and {@link HashDag#iterator()} methods order the nodes such that each is visited only
+ * after all its children (dependents) have already been visited.
  *
- * @param <T> the node type
+ * @param <E> the node type
  */
-public class HashDag<T> implements Dag<T> {
+public class HashDag<E> implements Dag<E> {
 
     /**
-     * The backing {@link Map} that represents this DAG
+     * The backing {@link Map} that represents this DAG.
+     * Each node is a key in this map, its values are the nodes it "depends" on.
      */
-    private final Map<T, Collection<T>> map;
+    private final Map<E, Collection<E>> map;
 
     /**
      * Construct an empty {@link HashDag}
@@ -28,7 +34,7 @@ public class HashDag<T> implements Dag<T> {
      *
      * @param map the map to initialize this DAG with
      */
-    public HashDag(Map<T, Collection<T>> map) {
+    public HashDag(Map<E, Collection<E>> map) {
         this.map = new HashMap<>();
         map.forEach(this::putAll);
     }
@@ -69,12 +75,12 @@ public class HashDag<T> implements Dag<T> {
 
     /**
      * Returns a {@link Iterator} over the nodes in this DAG.
-     * The iterator will return nodes in topologically order.
+     * The iterator will return nodes in reverse-topological order.
      *
      * @return a {@link Iterator} over the nodes in this DAG
      */
     @Override
-    public Iterator<T> iterator() {
+    public Iterator<E> iterator() {
         return sort().iterator();
     }
 
@@ -93,14 +99,17 @@ public class HashDag<T> implements Dag<T> {
      *
      * @param array the array into which the nodes of this DAG are to be stored if it is big enough;
      *              otherwise, a new array of the same runtime type is allocated for this purpose.
-     * @param <A>   the type of the array to create
+     * @param <T>   the type of the array to create
      * @return an array containing all the nodes in this DAG
      */
     @Override
-    public <A> A[] toArray(A[] array) {
-        Object[] sorted = sort().toArray();
+    public <T> T[] toArray(T[] array) {
+        @SuppressWarnings("unchecked")
+        T[] sorted = (T[]) sort().toArray();
         if (array.length < sorted.length) {
-            return (A[]) Arrays.copyOf(sorted, sorted.length, array.getClass());
+            @SuppressWarnings("unchecked")
+            T[] result = (T[]) Arrays.copyOf(sorted, sorted.length, array.getClass());
+            return result;
         }
         System.arraycopy(sorted, 0, array, 0, sorted.length);
         if (array.length > sorted.length) {
@@ -116,7 +125,7 @@ public class HashDag<T> implements Dag<T> {
      * @return {@code true} if this DAG changed as a result of the call
      */
     @Override
-    public boolean add(T node) {
+    public boolean add(E node) {
         return map.putIfAbsent(node, new HashSet<>()) == null;
     }
 
@@ -130,8 +139,8 @@ public class HashDag<T> implements Dag<T> {
     @Override
     public boolean remove(Object node) {
         boolean removed = map.remove(node) != null;
-        for (T parent : map.keySet()) {
-            Collection<T> children = map.get(parent);
+        for (E parent : map.keySet()) {
+            Collection<E> children = map.get(parent);
             if (children != null) {
                 removed |= children.remove(node);
             }
@@ -156,9 +165,9 @@ public class HashDag<T> implements Dag<T> {
      * @param nodes the collection containing the nodes to be added to this DAG
      */
     @Override
-    public boolean addAll(Collection<? extends T> nodes) {
+    public boolean addAll(Collection<? extends E> nodes) {
         boolean changed = false;
-        for (T node : nodes) {
+        for (E node : nodes) {
             if (add(node)) {
                 changed = true;
             }
@@ -192,8 +201,8 @@ public class HashDag<T> implements Dag<T> {
     @Override
     public boolean retainAll(Collection<?> collection) {
         // Collect the nodes to be removed
-        List<T> remove = new ArrayList<>();
-        for (T node : map.keySet()) {
+        List<E> remove = new ArrayList<>();
+        for (E node : map.keySet()) {
             if (!collection.contains(node)) {
                 remove.add(node);
             }
@@ -201,7 +210,7 @@ public class HashDag<T> implements Dag<T> {
 
         // Remove them
         boolean changed = false;
-        for (T node : remove) {
+        for (E node : remove) {
             remove(node);
             changed = true;
         }
@@ -248,7 +257,7 @@ public class HashDag<T> implements Dag<T> {
      * @return a shallow copy of this DAG
      */
     @Override
-    public Dag<T> clone() {
+    public Dag<E> clone() {
         return new HashDag<>(map);
     }
 
@@ -256,10 +265,10 @@ public class HashDag<T> implements Dag<T> {
     /* Methods exclusive to Dag<T> */
 
     @Override
-    public boolean put(T parent, T child) {
+    public boolean put(E parent, E child) {
         boolean changed;
         if (!map.containsKey(parent)) {
-            Set<T> children = new HashSet<>();
+            Set<E> children = new HashSet<>();
             children.add(child);
             changed = map.put(parent, children) != children;
         } else {
@@ -270,10 +279,10 @@ public class HashDag<T> implements Dag<T> {
     }
 
     @Override
-    public boolean putAll(T parent, Collection<T> children) {
+    public boolean putAll(E parent, Collection<E> children) {
         boolean changed = false;
         if (!children.isEmpty()) {
-            for (T child : children) {
+            for (E child : children) {
                 changed |= put(parent, child);
             }
         } else {
@@ -283,22 +292,22 @@ public class HashDag<T> implements Dag<T> {
     }
 
     @Override
-    public List<T> sort() {
+    public List<E> sort() {
 
         // https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm
         // Great for running a task on these elements in a single thread
 
-        List<T> sorted = new LinkedList<>();
-        Deque<T> s = new LinkedList<>(getRoots());
+        List<E> sorted = new LinkedList<>();
+        Deque<E> s = new LinkedList<>(getRoots());
 
-        Map<T, Collection<T>> copy = toMap();
+        Map<E, Collection<E>> copy = toMap();
 
         while (!s.isEmpty()) {
-            T n = s.pop();
+            E n = s.pop();
             sorted.add(n);
-            for (T m : copy.remove(n)) {
+            for (E m : copy.remove(n)) {
                 boolean hasParents = false;
-                for (Collection<T> entry : copy.values()) {
+                for (Collection<E> entry : copy.values()) {
                     if (entry.contains(m)) {
                         hasParents = true;
                         break;
@@ -314,23 +323,25 @@ public class HashDag<T> implements Dag<T> {
             return null;
         }
 
+        // Reverse it because reverse-topological order is more convenient
+        Collections.reverse(sorted);
         return sorted;
 
     }
 
     @Override
-    public Set<T> getRoots() {
-        Set<T> roots = new HashSet<>(map.keySet());
-        for (Collection<T> children : map.values()) {
+    public Set<E> getRoots() {
+        Set<E> roots = new HashSet<>(map.keySet());
+        for (Collection<E> children : map.values()) {
             roots.removeAll(children);
         }
         return roots;
     }
 
     @Override
-    public Set<T> getLeaves() {
-        Set<T> leaves = new HashSet<>();
-        for (Map.Entry<T, Collection<T>> entry : map.entrySet()) {
+    public Set<E> getLeaves() {
+        Set<E> leaves = new HashSet<>();
+        for (Map.Entry<E, Collection<E>> entry : map.entrySet()) {
             if (entry.getValue().isEmpty()) {
                 leaves.add(entry.getKey());
             }
@@ -339,9 +350,9 @@ public class HashDag<T> implements Dag<T> {
     }
 
     @Override
-    public Set<T> getParents(T node) {
-        Set<T> set = new HashSet<>();
-        for (Map.Entry<T, Collection<T>> entry : map.entrySet()) {
+    public Set<E> getParents(E node) {
+        Set<E> set = new HashSet<>();
+        for (Map.Entry<E, Collection<E>> entry : map.entrySet()) {
             if (entry.getValue().contains(node)) {
                 set.add(entry.getKey());
             }
@@ -350,8 +361,8 @@ public class HashDag<T> implements Dag<T> {
     }
 
     @Override
-    public Set<T> getChildren(T node) {
-        Collection<T> children = map.get(node);
+    public Set<E> getChildren(E node) {
+        Collection<E> children = map.get(node);
         if (children == null) {
             return new HashSet<>();
         } else {
@@ -360,31 +371,31 @@ public class HashDag<T> implements Dag<T> {
     }
 
     @Override
-    public Set<T> getAncestors(T node) {
-        Set<T> ancestors = getParents(node);
-        for (T ancestor : new HashSet<>(ancestors)) {
+    public Set<E> getAncestors(E node) {
+        Set<E> ancestors = getParents(node);
+        for (E ancestor : new HashSet<>(ancestors)) {
             ancestors.addAll(getAncestors(ancestor));
         }
         return ancestors;
     }
 
     @Override
-    public Set<T> getDescendants(T node) {
-        Set<T> descendants = getChildren(node);
-        for (T descendant : new HashSet<>(descendants)) {
+    public Set<E> getDescendants(E node) {
+        Set<E> descendants = getChildren(node);
+        for (E descendant : new HashSet<>(descendants)) {
             descendants.addAll(getDescendants(descendant));
         }
         return descendants;
     }
 
     @Override
-    public Set<T> getNodes() {
+    public Set<E> getNodes() {
         return toMap().keySet();
     }
 
     @Override
-    public Map<T, Collection<T>> toMap() {
-        Map<T, Collection<T>> copy = new HashMap<>();
+    public Map<E, Collection<E>> toMap() {
+        Map<E, Collection<E>> copy = new HashMap<>();
         map.forEach((key, value) -> copy.put(key, new HashSet<>(value)));
         return copy;
     }
