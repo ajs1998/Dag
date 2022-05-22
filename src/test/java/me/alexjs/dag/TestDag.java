@@ -107,7 +107,7 @@ public class TestDag {
         Assertions.assertTrue(parents.isEmpty());
         Assertions.assertTrue(children.isEmpty());
 
-        DagIterator<Integer> it = new DagIterator<>(dag);
+        Iterator<Integer> it = dag.iterator();
         Assertions.assertFalse(it.hasNext());
 
     }

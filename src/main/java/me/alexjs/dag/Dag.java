@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A Directed Acyclic Graph.
+ * A Directed Acyclic Graph
  *
  * @param <T> The node type
  */
@@ -19,7 +19,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      *
      * @param parent the parent node
      * @param child  the parent node's child
-     * @return
+     * @return {@code true} if this DAG changed as a result of the call
      */
     boolean put(T parent, T child);
 
@@ -29,12 +29,12 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      *
      * @param parent   the parent
      * @param children the parent node's children
-     * @return
+     * @return {@code true} if this DAG changed as a result of the call
      */
     boolean putAll(T parent, Collection<T> children);
 
     /**
-     * Order the nodes of this DAG such that all of a node's children come after it in the ordering.
+     * Order the nodes of this DAG such that all of a node's children come after it in the ordering
      *
      * @return a topologically sorted list of nodes, or {@code null} if there's a circular dependency
      * @see <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>
@@ -42,21 +42,21 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     List<T> sort();
 
     /**
-     * Get the nodes of this DAG that have no parents.
+     * Get the nodes of this DAG that have no parents
      *
      * @return the root nodes
      */
     Set<T> getRoots();
 
     /**
-     * Get the nodes of this DAG that have no children.
+     * Get the nodes of this DAG that have no children
      *
      * @return the leaf nodes
      */
     Set<T> getLeaves();
 
     /**
-     * Get the parents of a given node.
+     * Get the parents of a given node
      *
      * @param node the node
      * @return the parent nodes of the given node
@@ -64,7 +64,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     Set<T> getParents(T node);
 
     /**
-     * Get the children of a given node.
+     * Get the children of a given node
      *
      * @param node the node
      * @return the child nodes of the given node
@@ -72,7 +72,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     Set<T> getChildren(T node);
 
     /**
-     * Get the ancestor nodes of a given node.
+     * Get the ancestor nodes of a given node
      *
      * @param node the node
      * @return the ancestor nodes of the given node
@@ -80,7 +80,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     Set<T> getAncestors(T node);
 
     /**
-     * Get the descendant nodes of a given node.
+     * Get the descendant nodes of a given node
      *
      * @param node the node
      * @return the descendant nodes of the given node
@@ -88,7 +88,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     Set<T> getDescendants(T node);
 
     /**
-     * Get the full set of nodes this DAG contains.
+     * Get the full set of nodes this DAG contains
      *
      * @return the nodes this DAG contains
      */
@@ -103,8 +103,8 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     Map<T, Collection<T>> toMap();
 
     /**
-     * Create a shallow copy of this DAG. Mutations to a node in the copy will result in mutations to the node in the
-     * original DAG.
+     * Create a shallow copy of this DAG.
+     * Mutations to a node in the copy will result in mutations to the node in the original DAG.
      *
      * @return a shallow copy of this DAG
      */

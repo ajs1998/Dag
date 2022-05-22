@@ -10,10 +10,13 @@ import java.util.*;
  */
 public class HashDag<T> implements Dag<T> {
 
+    /**
+     * The backing {@link Map} that represents this DAG
+     */
     private final Map<T, Collection<T>> map;
 
     /**
-     * Construct an empty {@link HashDag}.
+     * Construct an empty {@link HashDag}
      */
     public HashDag() {
         this.map = new HashMap<>();
@@ -34,7 +37,7 @@ public class HashDag<T> implements Dag<T> {
     /* Methods from Collection<T> */
 
     /**
-     * Returns the number of nodes this DAG contains.
+     * Returns the number of nodes this DAG contains
      *
      * @return the size of the DAG
      */
@@ -44,9 +47,9 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Returns {@literal true} if this DAG contains no nodes.
+     * Returns {@code true} if this DAG contains no nodes
      *
-     * @return {@literal true} if this DAG contains no nodes
+     * @return {@code true} if this DAG contains no nodes
      */
     @Override
     public boolean isEmpty() {
@@ -54,10 +57,10 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Returns {@literal true} if this DAG contains the specified node.
+     * Returns {@code true} if this DAG contains the specified node
      *
      * @param node the node whose presence in this DAG is to be tested
-     * @return {@literal true} if this DAG contains the specified node
+     * @return {@code true} if this DAG contains the specified node
      */
     @Override
     public boolean contains(Object node) {
@@ -65,18 +68,18 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Returns a {@link DagIterator} over the nodes in this DAG.
+     * Returns a {@link Iterator} over the nodes in this DAG.
+     * The iterator will return nodes in topologically order.
      *
-     * @return a {@link DagIterator} over the nodes in this DAG
+     * @return a {@link Iterator} over the nodes in this DAG
      */
     @Override
     public Iterator<T> iterator() {
-        // TODO
         return sort().iterator();
     }
 
     /**
-     * Returns an array containing all the nodes in this DAG.
+     * Returns an array containing all the nodes in this DAG
      *
      * @return an array containing all the nodes in this DAG
      */
@@ -86,7 +89,7 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Returns an array containing all the nodes in this DAG.
+     * Returns an array containing all the nodes in this DAG
      *
      * @param array the array into which the nodes of this DAG are to be stored if it is big enough;
      *              otherwise, a new array of the same runtime type is allocated for this purpose.
@@ -107,10 +110,10 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Add a single node to this DAG.
+     * Add a single node to this DAG
      *
      * @param node the node to add
-     * @return {@literal true} if this DAG changed as a result of the call
+     * @return {@code true} if this DAG changed as a result of the call
      */
     @Override
     public boolean add(T node) {
@@ -122,7 +125,7 @@ public class HashDag<T> implements Dag<T> {
      * This will also remove the node from all its parents' collections of children.
      *
      * @param node the node to be removed from this DAG, if present
-     * @return {@literal true} if a node was removed as a result of the call
+     * @return {@code true} if a node was removed as a result of the call
      */
     @Override
     public boolean remove(Object node) {
@@ -137,10 +140,10 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Returns {@literal true} if this DAG contains all the elements in the specified collection.
+     * Returns {@code true} if this DAG contains all the elements in the specified collection
      *
      * @param collection the collection to be checked for containment in this collection
-     * @return {@literal true} if this DAG contains all the elements in the specified collection
+     * @return {@code true} if this DAG contains all the elements in the specified collection
      */
     @Override
     public boolean containsAll(Collection<?> collection) {
@@ -164,10 +167,10 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Removes all the nodes from this DAG that are also contained in the specified collection.
+     * Removes all the nodes from this DAG that are also contained in the specified collection
      *
      * @param nodes the collection containing elements to be removed from this collection
-     * @return {@literal true} if this DAG changed as a result of the call
+     * @return {@code true} if this DAG changed as a result of the call
      */
     @Override
     public boolean removeAll(Collection<?> nodes) {
@@ -181,10 +184,10 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Retains only the nodes in this DAG that are also contained in the specified collection.
+     * Retains only the nodes in this DAG that are also contained in the specified collection
      *
      * @param collection the collection containing the nodes to be retained in this DAG
-     * @return {@literal true} if this collection changed as a result of the call
+     * @return {@code true} if this collection changed as a result of the call
      */
     @Override
     public boolean retainAll(Collection<?> collection) {
@@ -207,7 +210,7 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Removes all the nodes from this DAG.
+     * Removes all the nodes from this DAG
      */
     @Override
     public void clear() {
@@ -215,10 +218,10 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Returns {@literal true} if the specified object is equal to this DAG.
+     * Returns {@code true} if the specified object is equal to this DAG
      *
      * @param o object to be compared for equality with this collection
-     * @return {@literal true} if the specified object is equal to this DAG
+     * @return {@code true} if the specified object is equal to this DAG
      */
     @Override
     public boolean equals(Object o) {
@@ -229,7 +232,7 @@ public class HashDag<T> implements Dag<T> {
     }
 
     /**
-     * Returns the hash code value for this DAG.
+     * Returns the hash code value for this DAG
      *
      * @return the hash code value for this DAG
      */
