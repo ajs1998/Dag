@@ -94,7 +94,7 @@ repositories {
 
 ```gradle
 dependencies {
-    implementation 'me.alexjs:dag:1.0.0'
+    implementation 'me.alexjs:dag:2.0.0'
 }
 ```
 
