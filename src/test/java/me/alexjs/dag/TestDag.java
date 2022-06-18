@@ -22,7 +22,7 @@ public class TestDag {
 
         List<Integer> sorted = dag.sort();
 
-        helper.assertOrder(dag, sorted, true);
+        helper.assertOrder(dag, sorted);
 
     }
 

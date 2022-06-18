@@ -23,13 +23,14 @@ public class TestingHelper {
 
     }
 
-    public void assertOrder(Dag<Integer> dag, List<Integer> sorted, boolean result) {
-        Assertions.assertEquals(result, dag.getNodes().size() == sorted.size());
+    public void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
+        Assertions.assertEquals(dag.getNodes().size(), sorted.size());
         for (Integer parent : sorted) {
             // If a parent comes before any of its children, then fail
             for (Integer child : dag.getChildren(parent)) {
-                if (result && sorted.indexOf(parent) <= sorted.indexOf(child)) {
+                if (sorted.indexOf(parent) < sorted.indexOf(child)) {
                     Assertions.fail();
+                    return;
                 }
             }
         }
@@ -56,11 +57,11 @@ public class TestingHelper {
             dag.put(parent, child);
         }
 
-        // Add some extra nodes that are guaranteed to have no parents or children
-        ArrayList<Integer> extra = IntStream.generate(() -> random.nextInt(2000) + 1000)
+        // Nodes that are guaranteed to have no parents or children
+        ArrayList<Integer> orphans = IntStream.generate(() -> random.nextInt(2000) + 1000)
                 .limit(100)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-        dag.addAll(extra);
+        dag.addAll(orphans);
 
         return dag;
 

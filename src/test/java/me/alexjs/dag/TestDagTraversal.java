@@ -23,15 +23,14 @@ public class TestDagTraversal {
     public void testMultiThreadTraverse() throws InterruptedException {
 
         Dag<Integer> dag = helper.populateDag();
-        BlockingQueue<Integer> sorted = new LinkedBlockingQueue<>();
+        List<Integer> sorted = new LinkedList<>();
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
         DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, sorted::add, executorService);
         Assertions.assertTrue(traverser.awaitTermination(2, TimeUnit.SECONDS));
-
         Assertions.assertTrue(executorService.isTerminated());
 
-        helper.assertOrder(dag, new LinkedList<>(sorted), true);
+        helper.assertOrder(dag, new LinkedList<>(sorted));
 
     }
 
@@ -44,10 +43,9 @@ public class TestDagTraversal {
 
         DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, sorted::add, executorService);
         Assertions.assertTrue(traverser.awaitTermination(2, TimeUnit.SECONDS));
-
         Assertions.assertTrue(executorService.isTerminated());
 
-        helper.assertOrder(dag, sorted, true);
+        helper.assertOrder(dag, sorted);
 
     }
 
@@ -81,7 +79,7 @@ public class TestDagTraversal {
             sorted.add(next);
         }
 
-        helper.assertOrder(dag, sorted, true);
+        helper.assertOrder(dag, sorted);
         Assertions.assertEquals(copy, dag);
 
     }
@@ -98,7 +96,7 @@ public class TestDagTraversal {
             sorted.add(next);
         }
 
-        helper.assertOrder(dag, sorted, true);
+        helper.assertOrder(dag, sorted);
         Assertions.assertEquals(copy, dag);
 
     }
@@ -113,7 +111,7 @@ public class TestDagTraversal {
 
         sorted.addAll(dag);
 
-        helper.assertOrder(dag, sorted, true);
+        helper.assertOrder(dag, sorted);
         Assertions.assertEquals(copy, dag);
 
     }
@@ -128,7 +126,7 @@ public class TestDagTraversal {
 
         Collections.addAll(sorted, dag.toArray(new Integer[0]));
 
-        helper.assertOrder(dag, sorted, true);
+        helper.assertOrder(dag, sorted);
         Assertions.assertEquals(copy, dag);
 
         sorted.clear();
@@ -136,7 +134,7 @@ public class TestDagTraversal {
         Collections.addAll(sorted, dag.toArray(new Integer[999999]));
         sorted = sorted.subList(0, sorted.indexOf(null));
 
-        helper.assertOrder(dag, sorted, true);
+        helper.assertOrder(dag, sorted);
         Assertions.assertEquals(copy, dag);
 
     }
@@ -166,7 +164,7 @@ public class TestDagTraversal {
         }, Executors.newSingleThreadExecutor());
         Assertions.assertFalse(traverser.awaitTermination(2, TimeUnit.SECONDS));
 
-        helper.assertOrder(dag, sorted, false);
+        Assertions.assertNotEquals(dag.size(), sorted.size());
 
     }
 

@@ -21,7 +21,8 @@ import java.util.function.Consumer;
  * If the task applied to any node throws an exception, the {@link ExecutorService} will be immediately shut down, and
  * {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return false.
  *
- * @param <T> the node type. This type parameter is not useful after the constructor is called, so you could use
+ * @param <T> the node type.
+ *            This type parameter is not useful after the constructor is called, so you could use
  *            {@code DagTraversalTask<?>} as your variable type.
  */
 public class DagTraversalTask<T> {
