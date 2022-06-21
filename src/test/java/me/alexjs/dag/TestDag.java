@@ -52,12 +52,12 @@ public class TestDag {
 
         Set<Integer> roots = dag.getRoots();
         for (Integer root : roots) {
-            Assertions.assertTrue(dag.getParents(root).isEmpty());
+            Assertions.assertTrue(dag.getIncoming(root).isEmpty());
         }
 
         Set<Integer> leaves = dag.getLeaves();
         for (Integer leaf : leaves) {
-            Assertions.assertTrue(dag.getChildren(leaf).isEmpty());
+            Assertions.assertTrue(dag.getOutgoing(leaf).isEmpty());
         }
 
     }
@@ -74,14 +74,14 @@ public class TestDag {
         for (Integer ancestor : ancestors) {
             Assertions.assertTrue(ancestor < node);
         }
-        Assertions.assertTrue(ancestors.containsAll(dag.getParents(node)));
+        Assertions.assertTrue(ancestors.containsAll(dag.getIncoming(node)));
 
         Set<Integer> descendants = dag.getDescendants(node);
         Assertions.assertFalse(descendants.isEmpty());
         for (Integer descendant : descendants) {
             Assertions.assertTrue(descendant > node);
         }
-        Assertions.assertTrue(descendants.containsAll(dag.getChildren(node)));
+        Assertions.assertTrue(descendants.containsAll(dag.getOutgoing(node)));
 
     }
 
@@ -94,8 +94,8 @@ public class TestDag {
         Set<Integer> leaves = dag.getLeaves();
         Set<Integer> ancestors = dag.getAncestors(0);
         Set<Integer> descendants = dag.getDescendants(0);
-        Set<Integer> parents = dag.getParents(0);
-        Set<Integer> children = dag.getChildren(0);
+        Set<Integer> parents = dag.getIncoming(0);
+        Set<Integer> children = dag.getOutgoing(0);
 
         Assertions.assertTrue(roots.isEmpty());
         Assertions.assertTrue(leaves.isEmpty());

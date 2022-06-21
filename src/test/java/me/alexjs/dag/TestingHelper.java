@@ -27,7 +27,7 @@ public class TestingHelper {
         Assertions.assertEquals(dag.getNodes().size(), sorted.size());
         for (Integer parent : sorted) {
             // If a parent comes before any of its children, then fail
-            for (Integer child : dag.getChildren(parent)) {
+            for (Integer child : dag.getOutgoing(parent)) {
                 if (sorted.indexOf(parent) < sorted.indexOf(child)) {
                     Assertions.fail();
                     return;
@@ -38,7 +38,7 @@ public class TestingHelper {
 
     public int getMiddleNode(Dag<Integer> dag) {
         int candidate = 250;
-        while (dag.getChildren(candidate).isEmpty() || dag.getParents(candidate).isEmpty()) {
+        while (dag.getOutgoing(candidate).isEmpty() || dag.getIncoming(candidate).isEmpty()) {
             candidate++;
             Assertions.assertTrue(candidate < 1000);
         }

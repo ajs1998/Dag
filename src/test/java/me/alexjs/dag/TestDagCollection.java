@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TestDagCollection {
@@ -43,12 +42,12 @@ public class TestDagCollection {
         dag.put(10, 12);
         dag.put(13, 14);
         dag.put(15, 14);
-        Assertions.assertEquals(2, dag.getChildren(10).size());
-        Assertions.assertEquals(2, dag.getParents(14).size());
+        Assertions.assertEquals(2, dag.getOutgoing(10).size());
+        Assertions.assertEquals(2, dag.getIncoming(14).size());
 
         Assertions.assertTrue(dag.retainAll(List.of(10, 14)));
-        Assertions.assertEquals(0, dag.getChildren(10).size());
-        Assertions.assertEquals(0, dag.getParents(14).size());
+        Assertions.assertEquals(0, dag.getOutgoing(10).size());
+        Assertions.assertEquals(0, dag.getIncoming(14).size());
 
     }
 

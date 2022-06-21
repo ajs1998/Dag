@@ -14,65 +14,75 @@ import java.util.Set;
 public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
 
     /**
-     * Add a parent-child relationship to this DAG.
-     * If either the parent or the child are not already in the graph, each will be added.
+     * Adds a {@code source} -> {@code target} node relationship to this DAG.
+     * If either node is not already in the graph, then it will be added.
      *
-     * @param parent the parent node
-     * @param child  the parent node's child
+     * @param source the source node
+     * @param target the target node
      * @return {@code true} if this DAG changed as a result of the call
      */
-    boolean put(T parent, T child);
+    boolean put(T source, T target);
 
     /**
-     * Add many parent-child relationships to this DAG.
-     * If the parent or any of its children are not already in the graph, each will be added.
+     * Adds many {@code source} -> {@code target} node relationships to this DAG.
+     * If the source node or any of its target nodes are not already in the graph, then they will be added.
      *
-     * @param parent   the parent
-     * @param children the parent node's children
+     * @param source  the source node
+     * @param targets the target nodes
      * @return {@code true} if this DAG changed as a result of the call
      */
-    boolean putAll(T parent, Collection<T> children);
+    boolean putAll(T source, Collection<T> targets);
 
     /**
-     * Order the nodes of this DAG such that all of a node's parents come after it in the ordering
+     * Removes an edge from this DAG.
+     * Only the edge will be removed, not the given nodes.
      *
-     * @return a list of nodes in reverse-topological order, or {@code null} if there's a circular dependency
+     * @param source the source node
+     * @param target the target node
+     * @return {@code true} if this DAG changed as a result of the call
+     */
+    boolean removeEdge(T source, T target);
+
+    /**
+     * Orders the nodes of this DAG such that each source node comes before its target nodes in the ordering
+     *
+     * @return a list of nodes in topological order, or {@code null} if there's a circular dependency
      * @see <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>
      */
     List<T> sort();
 
     /**
-     * Get the nodes of this DAG that have no parents
+     * Gets the nodes of this DAG that have no incoming edges
      *
      * @return the root nodes
      */
     Set<T> getRoots();
 
     /**
-     * Get the nodes of this DAG that have no children
+     * Gets the nodes of this DAG that have no outgoing edges
      *
      * @return the leaf nodes
      */
     Set<T> getLeaves();
 
     /**
-     * Get the parents of a given node
+     * Gets the nodes of the given node's incoming edges
      *
      * @param node the node
-     * @return the parent nodes of the given node
+     * @return the incoming nodes of the given node
      */
-    Set<T> getParents(T node);
+    Set<T> getIncoming(T node);
 
     /**
-     * Get the children of a given node
+     * Gets the nodes of the given node's outgoing edges
      *
      * @param node the node
-     * @return the child nodes of the given node
+     * @return the outgoing nodes of the given node
      */
-    Set<T> getChildren(T node);
+    Set<T> getOutgoing(T node);
 
     /**
-     * Get the ancestor nodes of a given node
+     * Gets the set of nodes such that each can reach the given node
      *
      * @param node the node
      * @return the ancestor nodes of the given node
@@ -80,7 +90,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     Set<T> getAncestors(T node);
 
     /**
-     * Get the descendant nodes of a given node
+     * Gets the set of nodes such that each is reachable from the given node
      *
      * @param node the node
      * @return the descendant nodes of the given node
@@ -88,23 +98,23 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     Set<T> getDescendants(T node);
 
     /**
-     * Get the full set of nodes this DAG contains
+     * Gets the full set of nodes this DAG contains
      *
      * @return the nodes this DAG contains
      */
     Set<T> getNodes();
 
     /**
-     * Create a {@link Map} representation of this DAG.
-     * Each node will be a key of the map, and each value is a collection of a node's children.
+     * Creates a {@link Map} representation of this DAG.
+     * Each key of the map will be a node, and each value is a collection of that node's outgoing nodes.
      *
      * @return a map representation of this DAG
      */
     Map<T, Collection<T>> toMap();
 
     /**
-     * Create a shallow copy of this DAG.
-     * Mutations to a node in the copy will result in mutations to the node in the original DAG.
+     * Creates a shallow copy of this DAG.
+     * Use this with caution if {@link T} is mutable.
      *
      * @return a shallow copy of this DAG
      */

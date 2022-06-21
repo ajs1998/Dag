@@ -16,8 +16,8 @@ import java.util.function.Consumer;
 
 /**
  * A helper class to easily traverse the nodes of a DAG with multiple threads.
- * Each node's task is only submitted for execution once all its children have finished execution, or if it has no
- * children.
+ * Each node's task is only submitted for execution once all its ancestor nodes have finished execution, or if it has no
+ * ancestors.
  * If the task applied to any node throws an exception, the {@link ExecutorService} will be immediately shut down, and
  * {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return false.
  *
@@ -54,7 +54,7 @@ public class DagTraversalTask<T> {
         this.failed = new AtomicBoolean();
 
         // Cache the parents of each node for this DAG
-        this.dag.getNodes().forEach(node -> this.parents.put(node, this.dag.getParents(node)));
+        this.dag.getNodes().forEach(node -> this.parents.put(node, this.dag.getIncoming(node)));
 
         // Get the set of leaves for this dag
         Set<T> leaves = this.dag.getLeaves();
@@ -103,7 +103,7 @@ public class DagTraversalTask<T> {
 
                             Set<T> parents = this.parents.get(node);
                             parents.retainAll(dag.getNodes());
-                            parents.removeIf(p -> !dag.getChildren(p).isEmpty());
+                            parents.removeIf(p -> !dag.getOutgoing(p).isEmpty());
 
                             lock.unlock();
 
