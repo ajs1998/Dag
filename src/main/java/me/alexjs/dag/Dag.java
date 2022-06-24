@@ -44,7 +44,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     boolean removeEdge(T source, T target);
 
     /**
-     * Orders the nodes of this DAG such that each source node comes before its target nodes in the ordering
+     * Orders the nodes of this DAG such that each node comes before its outgoing nodes in the ordering
      *
      * @return a list of nodes in topological order, or {@code null} if there's a circular dependency
      * @see <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>

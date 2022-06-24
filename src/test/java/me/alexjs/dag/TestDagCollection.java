@@ -38,16 +38,12 @@ public class TestDagCollection {
         Assertions.assertTrue(dag.removeAll(List.of(5, 6, 7)));
         Assertions.assertTrue(dag.isEmpty());
 
-        dag.put(10, 11);
-        dag.put(10, 12);
-        dag.put(13, 14);
-        dag.put(15, 14);
-        Assertions.assertEquals(2, dag.getOutgoing(10).size());
-        Assertions.assertEquals(2, dag.getIncoming(14).size());
-
-        Assertions.assertTrue(dag.retainAll(List.of(10, 14)));
-        Assertions.assertEquals(0, dag.getOutgoing(10).size());
-        Assertions.assertEquals(0, dag.getIncoming(14).size());
+        dag.put(8, 9);
+        Assertions.assertTrue(dag.removeEdge(8, 9));
+        Assertions.assertTrue(dag.contains(8));
+        Assertions.assertTrue(dag.contains(9));
+        Assertions.assertTrue(dag.getOutgoing(8).isEmpty());
+        Assertions.assertTrue(dag.getIncoming(9).isEmpty());
 
     }
 
@@ -58,11 +54,21 @@ public class TestDagCollection {
 
         Assertions.assertTrue(dag.size() > 0);
         Assertions.assertFalse(dag.isEmpty());
-
         dag.clear();
 
         Assertions.assertEquals(0, dag.size());
         Assertions.assertTrue(dag.isEmpty());
+
+        dag.put(1, 2);
+        dag.put(1, 3);
+        dag.put(4, 6);
+        dag.put(5, 6);
+        Assertions.assertEquals(2, dag.getOutgoing(1).size());
+        Assertions.assertEquals(2, dag.getIncoming(6).size());
+
+        Assertions.assertTrue(dag.retainAll(List.of(1, 6)));
+        Assertions.assertEquals(0, dag.getOutgoing(1).size());
+        Assertions.assertEquals(0, dag.getIncoming(6).size());
 
     }
 

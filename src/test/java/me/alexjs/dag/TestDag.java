@@ -18,7 +18,7 @@ public class TestDag {
     @RepeatedTest(50)
     public void testSort() {
 
-        Dag<Integer> dag = helper.populateDag();
+        Dag<Integer> dag = helper.populateDagSimple();
 
         List<Integer> sorted = dag.sort();
 
@@ -94,15 +94,15 @@ public class TestDag {
         Set<Integer> leaves = dag.getLeaves();
         Set<Integer> ancestors = dag.getAncestors(0);
         Set<Integer> descendants = dag.getDescendants(0);
-        Set<Integer> parents = dag.getIncoming(0);
-        Set<Integer> children = dag.getOutgoing(0);
+        Set<Integer> incoming = dag.getIncoming(0);
+        Set<Integer> outgoing = dag.getOutgoing(0);
 
         Assertions.assertTrue(roots.isEmpty());
         Assertions.assertTrue(leaves.isEmpty());
         Assertions.assertTrue(ancestors.isEmpty());
         Assertions.assertTrue(descendants.isEmpty());
-        Assertions.assertTrue(parents.isEmpty());
-        Assertions.assertTrue(children.isEmpty());
+        Assertions.assertTrue(incoming.isEmpty());
+        Assertions.assertTrue(outgoing.isEmpty());
 
         Iterator<Integer> it = dag.iterator();
         Assertions.assertFalse(it.hasNext());
@@ -110,7 +110,7 @@ public class TestDag {
     }
 
     @Test
-    public void testNoChildren() {
+    public void testNoOutgoing() {
 
         // Test with putAll()
         Dag<Integer> dag = new HashDag<>();

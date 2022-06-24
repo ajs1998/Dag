@@ -15,7 +15,7 @@ It includes a `Dag<T>` interface so you can provide your own implementation.
 ```java
 Dag<String> dag = new HashDag<>();
 
-// Add nodes with (parent, child) relationships to the DAG 
+// Add nodes with source -> target relationships to the DAG 
 dag.put("Dorothy", "Shelby");
 dag.put("Shelby", "Alex");
 dag.put("Joe", "Alex");
@@ -24,8 +24,9 @@ dag.put("Joe", "Alex");
 dag.add("Clare");
 dag.add("Sarah");
 
-// Find a reverse-topologically sorted list of the nodes
+// Find a topologically sorted list of the nodes
 // Ex: ["Alex", "Joe", "Sarah", "Shelby", "Dorothy", "Clare"]
+// Ex: ["Dorothy", "Shelby", "Clare", "Joe", "Alex", "Sarah"]
 List<String> sorted = dag.sort();
 
 // Find the root nodes of the DAG
@@ -36,13 +37,13 @@ Set<String> roots = dag.getRoots();
 // Ex: ["Alex", "Clare", "Sarah"]
 Set<String> leaves = dag.getLeaves();
 
-// Find the parents of a node
+// Find a node's incoming nodes
 // Ex: ["Joe", "Shelby"]
-Set<String> parents = dag.getParents("Alex");
+Set<String> incoming = dag.getIncoming("Alex");
 
-// Find the children of a node
+// Find a node's outgoing nodes
 // Ex: ["Shelby"]
-Set<String> children = dag.getChildren("Dorothy");
+Set<String> outgoing = dag.getOutgoing("Dorothy");
 
 // Find the ancestors of a node
 // Ex: ["Joe", "Shelby", "Dorothy"]
@@ -62,7 +63,7 @@ Dag<String> copy = dag.clone();
 ### DAG Traversal
 
 You can use a `DagTraversalTask` to run a task on each node in multiple threads. Each node is only visited once all of
-its children have been visited. This is useful for running complex multithreaded pipelines on nodes with shared
+its incoming nodes have been visited. This is useful for running complex multithreaded pipelines on nodes with shared
 dependencies.
 
 ```java

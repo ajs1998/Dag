@@ -81,14 +81,21 @@ public class HashDag<E> implements Dag<E> {
         List<E> sorted = new LinkedList<>();
         Deque<E> s = new LinkedList<>(getRoots());
 
-        Dag<E> copy = clone();
+        Map<E, Collection<E>> copy = this.toMap();
 
         while (!s.isEmpty()) {
             E n = s.pop();
             sorted.add(n);
-            for (E m : copy.getOutgoing(n)) {
-                copy.removeEdge(n, m);
-                if (copy.getIncoming(m).isEmpty()) {
+
+            for (E m : copy.remove(n)) {
+                boolean hasIncoming = false;
+                for (Collection<E> entry : copy.values()) {
+                    if (entry.contains(m)) {
+                        hasIncoming = true;
+                        break;
+                    }
+                }
+                if (!hasIncoming) {
                     s.add(m);
                 }
             }

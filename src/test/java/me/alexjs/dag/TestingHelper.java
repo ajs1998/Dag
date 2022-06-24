@@ -25,13 +25,10 @@ public class TestingHelper {
 
     public void assertOrder(Dag<Integer> dag, List<Integer> sorted) {
         Assertions.assertEquals(dag.getNodes().size(), sorted.size());
-        for (Integer parent : sorted) {
-            // If a parent comes before any of its children, then fail
-            for (Integer child : dag.getOutgoing(parent)) {
-                if (sorted.indexOf(parent) < sorted.indexOf(child)) {
-                    Assertions.fail();
-                    return;
-                }
+        for (Integer node : sorted) {
+            // If a node comes before any of its outgoing nodes, then fail
+            for (Integer outgoing : dag.getOutgoing(node)) {
+                Assertions.assertTrue(sorted.indexOf(node) < sorted.indexOf(outgoing));
             }
         }
     }
@@ -47,17 +44,17 @@ public class TestingHelper {
 
     public Dag<Integer> populateDag() {
 
-        // Add a ton of parent-child relationships. Many nodes will have multiple children
+        // Add a ton of source-target relationships. Many nodes will have multiple outgoing edges
         Dag<Integer> dag = new HashDag<>();
         int nodes = random.nextInt(5000) + 5000;
         for (int i = 0; i < nodes; i++) {
-            // A parent will always be strictly less than its children to ensure no circular dependencies
-            int parent = random.nextInt(500);
-            int child = parent + random.nextInt(500) + 1;
-            dag.put(parent, child);
+            // Each node will always be strictly less than its outgoing nodes to ensure no circular dependencies
+            int source = random.nextInt(500);
+            int target = source + random.nextInt(500) + 1;
+            dag.put(source, target);
         }
 
-        // Nodes that are guaranteed to have no parents or children
+        // Nodes that are guaranteed to have no incoming or outgoing edges
         ArrayList<Integer> orphans = IntStream.generate(() -> random.nextInt(2000) + 1000)
                 .limit(100)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);

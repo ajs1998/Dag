@@ -30,15 +30,15 @@ public class DagTraversalTask<T> {
     private final Dag<T> dag;
     private final Consumer<T> task;
     private final ListeningExecutorService executorService;
-    private final Map<T, Set<T>> parents;
+    private final Map<T, Set<T>> outgoingNodes;
     private final Lock lock;
     private final AtomicBoolean failed;
 
     /**
      * Create a task that traverses a DAG with an {@link java.util.concurrent.ExecutorService}
      * <p>
-     * The nodes will be traversed in reverse-topological order,
-     * such that no node is visited until all its children have been visited.
+     * The nodes will be traversed in topological order,
+     * such that no node is visited until all its incoming nodes have been visited.
      *
      * @param dag             the DAG to traverse
      * @param task            the task to apply to each node
@@ -49,21 +49,21 @@ public class DagTraversalTask<T> {
         this.dag = dag.clone();
         this.task = task;
         this.executorService = MoreExecutors.listeningDecorator(executorService);
-        this.parents = new HashMap<>();
+        this.outgoingNodes = new HashMap<>();
         this.lock = new ReentrantLock(true);
         this.failed = new AtomicBoolean();
 
-        // Cache the parents of each node for this DAG
-        this.dag.getNodes().forEach(node -> this.parents.put(node, this.dag.getIncoming(node)));
+        // Cache each node's outgoing nodes for this DAG
+        this.dag.getNodes().forEach(node -> this.outgoingNodes.put(node, this.dag.getOutgoing(node)));
 
         // Get the set of leaves for this dag
-        Set<T> leaves = this.dag.getLeaves();
+        Set<T> roots = this.dag.getRoots();
 
         // If there are no leaves, then there are no nodes to visit
-        if (leaves.isEmpty()) {
+        if (roots.isEmpty()) {
             executorService.shutdown();
         } else {
-            visit(leaves);
+            visit(roots);
         }
 
     }
@@ -101,13 +101,13 @@ public class DagTraversalTask<T> {
                                 executorService.shutdown();
                             }
 
-                            Set<T> parents = this.parents.get(node);
-                            parents.retainAll(dag.getNodes());
-                            parents.removeIf(p -> !dag.getOutgoing(p).isEmpty());
+                            Set<T> outgoing = this.outgoingNodes.get(node);
+                            outgoing.retainAll(dag.getNodes());
+                            outgoing.removeIf(p -> !dag.getIncoming(p).isEmpty());
 
                             lock.unlock();
 
-                            visit(parents);
+                            visit(outgoing);
 
                         }, MoreExecutors.directExecutor());
             } catch (Throwable ignore) {
