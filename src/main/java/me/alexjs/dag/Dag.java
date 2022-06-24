@@ -14,7 +14,7 @@ import java.util.Set;
 public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
 
     /**
-     * Adds a {@code source} -> {@code target} node relationship to this DAG.
+     * Adds a {@code source} to {@code target} node relationship to this DAG.
      * If either node is not already in the graph, then it will be added.
      *
      * @param source the source node
@@ -24,7 +24,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
     boolean put(T source, T target);
 
     /**
-     * Adds many {@code source} -> {@code target} node relationships to this DAG.
+     * Adds many {@code source} to {@code target} node relationships to this DAG.
      * If the source node or any of its target nodes are not already in the graph, then they will be added.
      *
      * @param source  the source node
