@@ -1,4 +1,4 @@
-name: Publish Package with Gradle
+name: Publish Maven package
 
 on:
   release:
@@ -24,7 +24,7 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1.0.4
 
-      - name: Publish to GitHub Packages
+      - name: Publish Maven package
         uses: gradle/gradle-build-action@v2.1.5
         with:
           arguments: -Pversion=${{ github.event.release.tag_name }} -PmavenUsername=${{ serets.MAVEN_USERNAME }} -PmavenPassword=${{ serets.MAVEN_PASSWORD }} publish
