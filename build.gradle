@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'signing'
 }
 
 group 'me.alexjs'
@@ -27,7 +28,7 @@ java {
     withJavadocJar()
 }
 
-compileJava   {
+compileJava {
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
 }
@@ -35,17 +36,57 @@ compileJava   {
 publishing {
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ajs1998/Dag")
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+            // These credentials are saved in ~/.gradle/gradle.properties
             credentials {
-                username = System.getenv("USERNAME")
-                password = System.getenv("TOKEN")
+                username = project.mavenUsername
+                password = project.mavenPassword
             }
         }
     }
+
     publications {
-        gpr(MavenPublication) {
-            from(components.java)
+
+        def repoHttps = "https:/github.com/ajs1998/Dag"
+        def repoSsh = "git@github.com:ajs1998/Dag.git"
+
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+
+                name = 'Dag'
+                description = 'Java implementation of a DAG (Directed Acyclic Graph)'
+                url = '$repoHttps'
+
+                licenses {
+                    license {
+                        name = 'The MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'ajs1998'
+                        name = 'Alex Sweeney'
+                        email = 'ajs1998@gmail.com'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:$repoHttps.git'
+                    developerConnection = 'scm:git:$repoSsh'
+                    url = '$repoHttps'
+                }
+
+            }
         }
+
     }
+}
+
+signing {
+    useGpgCmd()
+    sign publishing.publications.mavenJava
 }

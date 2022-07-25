@@ -76,35 +76,7 @@ boolean success = traverser.awaitTermination(10, TimeUnit.MINUTES));
 
 ## How do I get it?
 
-### Gradle package from GitHub Packages
-
-```gradle
-repositories {
-    mavenCentral()
-    maven {
-        url = uri('https://maven.pkg.github.com/ajs1998/Dag')
-        credentials {
-            username = {YOUR GITHUB PAT}
-            // This is a PAT (Personal Access Token) that only has permission to read/download public GitHub Packages.
-            // This is not the actual password for the account.
-            password = {YOUR GITHUB PAT}
-        }
-    }
-}
-```
-
-```gradle
-dependencies {
-    implementation 'me.alexjs:dag:2.0.0'
-}
-```
-
-You need to <a href="https://github.com/settings/tokens">create a GitHub Personal Access Token (PAT)</a> to be able to
-download GitHub Packages. The token only needs the `read:packages` permission to work.
-
-### Maven Central package
-
-Coming soon
+[Maven Central package](https://search.maven.org/artifact/me.alexjs/dag)
 
 ## Notes
 
