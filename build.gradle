@@ -40,8 +40,8 @@ publishing {
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
             // These credentials are saved in ~/.gradle/gradle.properties
             credentials {
-                username = project.mavenUsername
-                password = project.mavenPassword
+                username = project.findProperty("mavenUsername")
+                password = project.findProperty("mavenPassword")
             }
         }
     }
