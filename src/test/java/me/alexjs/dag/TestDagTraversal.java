@@ -6,7 +6,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 // No test should take longer than 2 seconds
 @Timeout(2)
@@ -19,31 +21,29 @@ public class TestDagTraversal {
         helper = new TestingHelper();
     }
 
-    @RepeatedTest(50)
+    @RepeatedTest(100)
     public void testMultiThreadTraverse() throws InterruptedException {
 
         Dag<Integer> dag = helper.populateDag();
         List<Integer> sorted = new LinkedList<>();
         ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-        DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, sorted::add, executorService);
-        Assertions.assertTrue(traverser.awaitTermination(2, TimeUnit.SECONDS));
-        Assertions.assertTrue(executorService.isTerminated());
+        DagTraversalTask<?> task = new DagTraversalTask<>(dag, sorted::add, executorService);
+        Assertions.assertTrue(task.awaitTermination(2, TimeUnit.SECONDS));
 
         helper.assertOrder(dag, new LinkedList<>(sorted));
 
     }
 
-    @RepeatedTest(50)
+    @RepeatedTest(100)
     public void testSingleThreadTraverse() throws InterruptedException {
 
         Dag<Integer> dag = helper.populateDag();
         List<Integer> sorted = new LinkedList<>();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-        DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, sorted::add, executorService);
-        Assertions.assertTrue(traverser.awaitTermination(2, TimeUnit.SECONDS));
-        Assertions.assertTrue(executorService.isTerminated());
+        DagTraversalTask<?> task = new DagTraversalTask<>(dag, sorted::add, executorService);
+        Assertions.assertTrue(task.awaitTermination(2, TimeUnit.SECONDS));
 
         helper.assertOrder(dag, sorted);
 
@@ -54,13 +54,13 @@ public class TestDagTraversal {
 
         Dag<Integer> dag = helper.populateDag();
 
-        DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, e -> {
+        DagTraversalTask<?> task = new DagTraversalTask<>(dag, e -> {
             try {
                 Thread.sleep(10 * 1000);
             } catch (InterruptedException ignore) {
             }
         }, Executors.newSingleThreadExecutor());
-        Assertions.assertFalse(traverser.awaitTermination(500, TimeUnit.MILLISECONDS));
+        Assertions.assertFalse(task.awaitTermination(500, TimeUnit.MILLISECONDS));
 
     }
 
@@ -145,8 +145,8 @@ public class TestDagTraversal {
         Dag<Integer> dag = new HashDag<>();
         List<Integer> sorted = new LinkedList<>();
 
-        DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, sorted::add, Executors.newSingleThreadExecutor());
-        Assertions.assertTrue(traverser.awaitTermination(2, TimeUnit.SECONDS));
+        DagTraversalTask<?> task = new DagTraversalTask<>(dag, sorted::add, Executors.newSingleThreadExecutor());
+        Assertions.assertTrue(task.awaitTermination(2, TimeUnit.SECONDS));
 
         Assertions.assertTrue(sorted.isEmpty());
 
@@ -158,11 +158,11 @@ public class TestDagTraversal {
         Dag<Integer> dag = helper.populateDag();
         List<Integer> sorted = new LinkedList<>();
 
-        DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, e -> {
+        DagTraversalTask<?> task = new DagTraversalTask<>(dag, e -> {
             sorted.add(e);
             throw new RuntimeException();
         }, Executors.newSingleThreadExecutor());
-        Assertions.assertFalse(traverser.awaitTermination(2, TimeUnit.SECONDS));
+        Assertions.assertFalse(task.awaitTermination(2, TimeUnit.SECONDS));
 
         Assertions.assertNotEquals(dag.size(), sorted.size());
 

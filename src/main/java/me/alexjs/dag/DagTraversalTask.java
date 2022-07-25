@@ -9,17 +9,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
  * A helper class to easily traverse the nodes of a DAG with multiple threads.
- * Each node's task is only submitted for execution once all its ancestor nodes have finished execution, or if it has no
- * ancestors.
- * If the task applied to any node throws an exception, the {@link ExecutorService} will be immediately shut down, and
- * {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return false.
+ * Each node's task is only submitted for execution once all its ancestor nodes have finished execution,
+ * or if it has no ancestors.
+ * If the task applied to any node throws an exception,
+ * then this will stop submitting new tasks
+ * and {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return false.
  *
  * @param <T> the node type.
  *            This type parameter is not useful after the constructor is called, so you could use
@@ -32,7 +34,8 @@ public class DagTraversalTask<T> {
     private final ListeningExecutorService executorService;
     private final Map<T, Set<T>> outgoingNodes;
     private final Lock lock;
-    private final AtomicBoolean failed;
+    private final Condition terminated;
+    private final AtomicReference<Status> status;
 
     /**
      * Create a task that traverses a DAG with an {@link java.util.concurrent.ExecutorService}
@@ -51,17 +54,18 @@ public class DagTraversalTask<T> {
         this.executorService = MoreExecutors.listeningDecorator(executorService);
         this.outgoingNodes = new HashMap<>();
         this.lock = new ReentrantLock(true);
-        this.failed = new AtomicBoolean();
+        this.terminated = lock.newCondition();
+        this.status = new AtomicReference<>(Status.RUNNING);
 
         // Cache each node's outgoing nodes for this DAG
         this.dag.getNodes().forEach(node -> this.outgoingNodes.put(node, this.dag.getOutgoing(node)));
 
-        // Get the set of leaves for this dag
+        // Get the set of roots for this dag
         Set<T> roots = this.dag.getRoots();
 
         // If there are no leaves, then there are no nodes to visit
         if (roots.isEmpty()) {
-            executorService.shutdown();
+            status.set(Status.DONE);
         } else {
             visit(roots);
         }
@@ -69,8 +73,8 @@ public class DagTraversalTask<T> {
     }
 
     /**
-     * Blocks until all nodes have been traversed, or the timeout occurs, or the current thread is interrupted,
-     * whichever happens first.
+     * Blocks until all nodes have been traversed, or the timeout occurs,
+     * or a task fails, or the current thread is interrupted, whichever happens first.
      *
      * @param timeout the maximum time to wait
      * @param unit    the time unit of the timeout argument
@@ -78,42 +82,80 @@ public class DagTraversalTask<T> {
      * @throws InterruptedException if interrupted while waiting
      */
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        return executorService.awaitTermination(timeout, unit) && !failed.get();
+
+        Status currentStatus = status.get();
+        if (currentStatus == Status.DONE) {
+            return true;
+        } else if (currentStatus == Status.ERROR) {
+            return false;
+        }
+
+        boolean result;
+        try {
+            lock.lock();
+            result = terminated.await(timeout, unit) && status.get() == Status.DONE;
+        } finally {
+            lock.unlock();
+        }
+
+        return result;
+
     }
 
     private void visit(Collection<T> nodes) {
 
         for (final T node : nodes) {
-            try {
-                executorService.submit(() -> {
+
+            if (status.get() != Status.RUNNING) {
+                return;
+            }
+
+            executorService.submit(() -> {
+                        try {
+                            task.accept(node);
+                        } catch (Throwable t) {
                             try {
-                                task.accept(node);
-                            } catch (Throwable t) {
-                                failed.set(true);
-                                executorService.shutdownNow();
+                                lock.lock();
+                                status.compareAndSet(Status.RUNNING, Status.ERROR);
+                                terminated.signalAll();
+                            } finally {
+                                lock.unlock();
                             }
-                        })
-                        .addListener(() -> {
+                        }
+                    })
+                    .addListener(() -> {
+
+                        try {
+
                             lock.lock();
 
                             dag.remove(node);
                             if (dag.isEmpty()) {
-                                executorService.shutdown();
+                                status.compareAndSet(Status.RUNNING, Status.DONE);
+                                terminated.signalAll();
+                                return;
                             }
 
                             Set<T> outgoing = this.outgoingNodes.get(node);
                             outgoing.retainAll(dag.getNodes());
                             outgoing.removeIf(p -> !dag.getIncoming(p).isEmpty());
 
-                            lock.unlock();
-
                             visit(outgoing);
 
-                        }, MoreExecutors.directExecutor());
-            } catch (Throwable ignore) {
-            }
+                        } finally {
+                            lock.unlock();
+                        }
+
+                    }, MoreExecutors.directExecutor());
+
         }
 
+    }
+
+    private enum Status {
+        RUNNING,
+        ERROR,
+        DONE
     }
 
 }
