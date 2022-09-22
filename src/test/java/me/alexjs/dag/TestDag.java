@@ -4,8 +4,7 @@ import org.junit.jupiter.api.*;
 
 import java.util.*;
 
-// No test should take longer than a second
-@Timeout(1)
+@Timeout(2)
 public class TestDag {
 
     private static TestingHelper helper;
@@ -42,6 +41,14 @@ public class TestDag {
         dag.put(6, 0);
 
         Assertions.assertNull(dag.sort());
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> dag.getAncestors(3));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> dag.getDescendants(3));
+
+        Assertions.assertDoesNotThrow(() -> dag.getIncoming(3));
+        Assertions.assertDoesNotThrow(() -> dag.getOutgoing(3));
+        Assertions.assertDoesNotThrow(dag::getRoots);
+        Assertions.assertDoesNotThrow(dag::getLeaves);
 
     }
 

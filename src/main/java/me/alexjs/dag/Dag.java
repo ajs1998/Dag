@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A Directed Acyclic Graph
+ * A Directed Acyclic Graph with the spirit of something the Java Collections Framework
  *
- * @param <T> The node type
+ * @param <E> The node type
  */
-public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
+public interface Dag<E> extends Collection<E>, Cloneable, Serializable {
 
     /**
      * Adds a {@code source} to {@code target} node relationship to this DAG.
@@ -21,7 +21,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @param target the target node
      * @return {@code true} if this DAG changed as a result of the call
      */
-    boolean put(T source, T target);
+    boolean put(E source, E target);
 
     /**
      * Adds many {@code source} to {@code target} node relationships to this DAG.
@@ -31,7 +31,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @param targets the target nodes
      * @return {@code true} if this DAG changed as a result of the call
      */
-    boolean putAll(T source, Collection<T> targets);
+    boolean putAll(E source, Collection<E> targets);
 
     /**
      * Removes an edge from this DAG.
@@ -41,7 +41,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @param target the target node
      * @return {@code true} if this DAG changed as a result of the call
      */
-    boolean removeEdge(T source, T target);
+    boolean removeEdge(E source, E target);
 
     /**
      * Orders the nodes of this DAG such that each node comes before its outgoing nodes in the ordering
@@ -49,21 +49,21 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @return a list of nodes in topological order, or {@code null} if there's a circular dependency
      * @see <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>
      */
-    List<T> sort();
+    List<E> sort();
 
     /**
      * Gets the nodes of this DAG that have no incoming edges
      *
      * @return the root nodes
      */
-    Set<T> getRoots();
+    Set<E> getRoots();
 
     /**
      * Gets the nodes of this DAG that have no outgoing edges
      *
      * @return the leaf nodes
      */
-    Set<T> getLeaves();
+    Set<E> getLeaves();
 
     /**
      * Gets the nodes of the given node's incoming edges
@@ -71,7 +71,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @param node the node
      * @return the incoming nodes of the given node
      */
-    Set<T> getIncoming(T node);
+    Set<E> getIncoming(E node);
 
     /**
      * Gets the nodes of the given node's outgoing edges
@@ -79,7 +79,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @param node the node
      * @return the outgoing nodes of the given node
      */
-    Set<T> getOutgoing(T node);
+    Set<E> getOutgoing(E node);
 
     /**
      * Gets the set of nodes such that each can reach the given node
@@ -87,7 +87,7 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @param node the node
      * @return the ancestor nodes of the given node
      */
-    Set<T> getAncestors(T node);
+    Set<E> getAncestors(E node);
 
     /**
      * Gets the set of nodes such that each is reachable from the given node
@@ -95,14 +95,14 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      * @param node the node
      * @return the descendant nodes of the given node
      */
-    Set<T> getDescendants(T node);
+    Set<E> getDescendants(E node);
 
     /**
      * Gets the full set of nodes this DAG contains
      *
      * @return the nodes this DAG contains
      */
-    Set<T> getNodes();
+    Set<E> getNodes();
 
     /**
      * Creates a {@link Map} representation of this DAG.
@@ -110,14 +110,14 @@ public interface Dag<T> extends Collection<T>, Cloneable, Serializable {
      *
      * @return a map representation of this DAG
      */
-    Map<T, Collection<T>> toMap();
+    Map<E, Collection<E>> toMap();
 
     /**
      * Creates a shallow copy of this DAG.
-     * Use this with caution if {@link T} is mutable.
+     * Use this with caution if {@link E} is mutable.
      *
      * @return a shallow copy of this DAG
      */
-    Dag<T> clone();
+    Dag<E> clone();
 
 }

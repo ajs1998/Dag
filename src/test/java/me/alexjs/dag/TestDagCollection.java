@@ -3,9 +3,11 @@ package me.alexjs.dag;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.List;
 
+@Timeout(2)
 public class TestDagCollection {
 
     private static TestingHelper helper;

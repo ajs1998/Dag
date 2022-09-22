@@ -152,18 +152,28 @@ public class HashDag<E> implements Dag<E> {
 
     @Override
     public Set<E> getAncestors(E node) {
+        checkForCircularDependency();
+        return getAncestorsImpl(node);
+    }
+
+    private Set<E> getAncestorsImpl(E node) {
         Set<E> ancestors = getIncoming(node);
         for (E ancestor : new HashSet<>(ancestors)) {
-            ancestors.addAll(getAncestors(ancestor));
+            ancestors.addAll(getAncestorsImpl(ancestor));
         }
         return ancestors;
     }
 
     @Override
     public Set<E> getDescendants(E node) {
+        checkForCircularDependency();
+        return getDescendantsImpl(node);
+    }
+
+    private Set<E> getDescendantsImpl(E node) {
         Set<E> descendants = getOutgoing(node);
         for (E descendant : new HashSet<>(descendants)) {
-            descendants.addAll(getDescendants(descendant));
+            descendants.addAll(getDescendantsImpl(descendant));
         }
         return descendants;
     }
@@ -310,9 +320,7 @@ public class HashDag<E> implements Dag<E> {
     public boolean addAll(Collection<? extends E> nodes) {
         boolean changed = false;
         for (E node : nodes) {
-            if (add(node)) {
-                changed = true;
-            }
+            changed |= add(node);
         }
         return changed;
     }
@@ -327,9 +335,7 @@ public class HashDag<E> implements Dag<E> {
     public boolean removeAll(Collection<?> nodes) {
         boolean changed = false;
         for (Object node : nodes) {
-            if (remove(node)) {
-                changed = true;
-            }
+            changed |= remove(node);
         }
         return changed;
     }
@@ -401,6 +407,12 @@ public class HashDag<E> implements Dag<E> {
     @Override
     public Dag<E> clone() {
         return new HashDag<>(map);
+    }
+
+    private void checkForCircularDependency() {
+        if (sort() == null) {
+            throw new IllegalArgumentException("DAG contains a circular dependency");
+        }
     }
 
 }

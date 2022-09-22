@@ -10,7 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-// No test should take longer than 2 seconds
 @Timeout(2)
 public class TestDagTraversal {
 
@@ -21,7 +20,8 @@ public class TestDagTraversal {
         helper = new TestingHelper();
     }
 
-    @RepeatedTest(100)
+    // This test has a history of being very slightly flaky
+    @RepeatedTest(1000)
     public void testMultiThreadTraverse() throws InterruptedException {
 
         Dag<Integer> dag = helper.populateDag();
