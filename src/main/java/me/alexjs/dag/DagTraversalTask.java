@@ -90,66 +90,57 @@ public class DagTraversalTask<T> {
             return false;
         }
 
-        boolean result;
         try {
             lock.lock();
-            result = terminated.await(timeout, unit) && status.get() == Status.DONE;
+            return terminated.await(timeout, unit) && status.get() == Status.DONE;
         } finally {
             lock.unlock();
         }
 
-        return result;
-
     }
 
     private void visit(Collection<T> nodes) {
-
         for (final T node : nodes) {
-
-            if (status.get() != Status.RUNNING) {
+            if (status.get() != Status.RUNNING) { // TODO Is this necessary?
                 return;
             }
-
-            executorService.submit(() -> {
-                        try {
-                            task.accept(node);
-                        } catch (Throwable t) {
-                            try {
-                                lock.lock();
-                                status.compareAndSet(Status.RUNNING, Status.ERROR);
-                                terminated.signalAll();
-                            } finally {
-                                lock.unlock();
-                            }
-                        }
-                    })
-                    .addListener(() -> {
-
-                        try {
-
-                            lock.lock();
-
-                            dag.remove(node);
-                            if (dag.isEmpty()) {
-                                status.compareAndSet(Status.RUNNING, Status.DONE);
-                                terminated.signalAll();
-                                return;
-                            }
-
-                            Set<T> outgoing = this.outgoingNodes.get(node);
-                            outgoing.retainAll(dag.getNodes());
-                            outgoing.removeIf(p -> !dag.getIncoming(p).isEmpty());
-
-                            visit(outgoing);
-
-                        } finally {
-                            lock.unlock();
-                        }
-
-                    }, MoreExecutors.directExecutor());
-
+            executorService.submit(() -> run(node))
+                    .addListener(() -> propagate(node), executorService);
         }
+    }
 
+    private void run(T node) {
+        try {
+            task.accept(node);
+        } catch (Throwable t) {
+            try {
+                lock.lock();
+                status.compareAndSet(Status.RUNNING, Status.ERROR);
+                terminated.signalAll();
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+
+    private void propagate(T node) {
+        try {
+            lock.lock();
+
+            dag.remove(node);
+            if (dag.isEmpty()) {
+                status.compareAndSet(Status.RUNNING, Status.DONE);
+                terminated.signalAll();
+            }
+
+            Set<T> outgoing = this.outgoingNodes.get(node);
+            outgoing.retainAll(dag.getNodes());
+            outgoing.removeIf(p -> !dag.getIncoming(p).isEmpty());
+
+            visit(outgoing);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private enum Status {
