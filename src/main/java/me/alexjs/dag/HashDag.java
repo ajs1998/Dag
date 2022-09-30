@@ -178,6 +178,12 @@ public class HashDag<E> implements Dag<E> {
         return descendants;
     }
 
+    private void checkForCircularDependency() {
+        if (sort() == null) {
+            throw new IllegalArgumentException("DAG contains a circular dependency");
+        }
+    }
+
     @Override
     public Set<E> getNodes() {
         return toMap().keySet();
@@ -205,7 +211,7 @@ public class HashDag<E> implements Dag<E> {
     }
 
 
-    /* Methods from Collection<T> */
+    /* Methods from Collection<E> */
 
     /**
      * Returns the number of nodes this DAG contains
@@ -296,7 +302,7 @@ public class HashDag<E> implements Dag<E> {
     }
 
     /**
-     * Removes a node and all its incoming and outgoing edges from this DAG.
+     * Removes a node and all its incoming and outgoing edges from this DAG
      *
      * @param node the node to be removed from this DAG, if present
      * @return {@code true} if the node was removed as a result of the call
@@ -421,12 +427,6 @@ public class HashDag<E> implements Dag<E> {
     @Override
     public Dag<E> clone() {
         return new HashDag<>(map);
-    }
-
-    private void checkForCircularDependency() {
-        if (sort() == null) {
-            throw new IllegalArgumentException("DAG contains a circular dependency");
-        }
     }
 
 }
