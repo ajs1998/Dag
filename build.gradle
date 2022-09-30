@@ -49,35 +49,35 @@ publishing {
     publications {
 
         def repoHttps = "https:/github.com/ajs1998/Dag"
-        def repoSsh = "git@github.com:ajs1998/Dag.git"
+        def repoSsh = "git@github.com:ajs1998/Dag"
 
         mavenJava(MavenPublication) {
             from components.java
             pom {
 
                 name = 'Dag'
-                description = 'Java implementation of a DAG (Directed Acyclic Graph)'
-                url = '$repoHttps'
+                description = "Java implementation of a DAG (Directed Acyclic Graph)"
+                url = "$repoHttps"
 
                 licenses {
                     license {
-                        name = 'The MIT License'
-                        url = 'https://opensource.org/licenses/MIT'
+                        name = "The MIT License"
+                        url = "https://opensource.org/licenses/MIT"
                     }
                 }
 
                 developers {
                     developer {
-                        id = 'ajs1998'
-                        name = 'Alex Sweeney'
-                        email = 'ajs1998@gmail.com'
+                        id = "ajs1998"
+                        name = "Alex Sweeney"
+                        email = "ajs1998@gmail.com"
                     }
                 }
 
                 scm {
-                    connection = 'scm:git:$repoHttps.git'
-                    developerConnection = 'scm:git:$repoSsh'
-                    url = '$repoHttps'
+                    connection = "scm:git:${repoHttps}.git"
+                    developerConnection = "scm:git:${repoSsh}.git"
+                    url = repoHttps
                 }
 
             }
