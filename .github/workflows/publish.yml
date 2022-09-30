@@ -26,5 +26,8 @@ jobs:
 
       - name: Publish Maven package
         uses: gradle/gradle-build-action@v2.1.5
+        env:
+          GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         with:
           arguments: -Pversion=${{ github.event.release.tag_name }} -PmavenUsername=${{ secrets.MAVEN_USERNAME }} -PmavenPassword=${{ secrets.MAVEN_PASSWORD }} publish
