@@ -87,4 +87,8 @@ boolean success = task.awaitTermination(10, TimeUnit.MINUTES));
 - 100% test coverage
 - 100% Javadoc coverage
 
+## Contribute
+Please make a PR or an Issue for any question, bug, feature, or any other request.
+I'm happy to keep this repository well-maintained.
+
 [![CI](https://github.com/ajs1998/Dag/actions/workflows/test.yml/badge.svg)](https://github.com/ajs1998/Dag/actions/workflows/test.yml)
