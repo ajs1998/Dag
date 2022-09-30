@@ -21,11 +21,12 @@ import java.util.function.Consumer;
  * or if it has no ancestors.
  * If the task applied to any node throws an exception,
  * then this will stop submitting new tasks
- * and {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return false.
+ * and {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return {@code false}.
+ * <p>
+ * The type parameter is not useful after the constructor is called,
+ * so you could use {@code DagTraversalTask<?>} as your variable type.
  *
- * @param <T> the node type.
- *            This type parameter is not useful after the constructor is called, so you could use
- *            {@code DagTraversalTask<?>} as your variable type.
+ * @param <T> the node type
  */
 public class DagTraversalTask<T> {
 
@@ -90,66 +91,54 @@ public class DagTraversalTask<T> {
             return false;
         }
 
-        boolean result;
         try {
             lock.lock();
-            result = terminated.await(timeout, unit) && status.get() == Status.DONE;
+            return terminated.await(timeout, unit) && status.get() == Status.DONE;
         } finally {
             lock.unlock();
         }
 
-        return result;
-
     }
 
     private void visit(Collection<T> nodes) {
-
         for (final T node : nodes) {
+            executorService.submit(() -> run(node))
+                    .addListener(() -> propagate(node), executorService);
+        }
+    }
 
-            if (status.get() != Status.RUNNING) {
-                return;
+    private void run(T node) {
+        try {
+            task.accept(node);
+        } catch (Throwable t) {
+            try {
+                lock.lock();
+                status.compareAndSet(Status.RUNNING, Status.ERROR);
+                terminated.signalAll();
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+
+    private void propagate(T node) {
+        try {
+            lock.lock();
+
+            dag.remove(node);
+            if (dag.isEmpty()) {
+                status.compareAndSet(Status.RUNNING, Status.DONE);
+                terminated.signalAll();
             }
 
-            executorService.submit(() -> {
-                        try {
-                            task.accept(node);
-                        } catch (Throwable t) {
-                            try {
-                                lock.lock();
-                                status.compareAndSet(Status.RUNNING, Status.ERROR);
-                                terminated.signalAll();
-                            } finally {
-                                lock.unlock();
-                            }
-                        }
-                    })
-                    .addListener(() -> {
+            Set<T> outgoing = this.outgoingNodes.get(node);
+            outgoing.retainAll(dag.getNodes());
+            outgoing.removeIf(p -> !dag.getIncoming(p).isEmpty());
 
-                        try {
-
-                            lock.lock();
-
-                            dag.remove(node);
-                            if (dag.isEmpty()) {
-                                status.compareAndSet(Status.RUNNING, Status.DONE);
-                                terminated.signalAll();
-                                return;
-                            }
-
-                            Set<T> outgoing = this.outgoingNodes.get(node);
-                            outgoing.retainAll(dag.getNodes());
-                            outgoing.removeIf(p -> !dag.getIncoming(p).isEmpty());
-
-                            visit(outgoing);
-
-                        } finally {
-                            lock.unlock();
-                        }
-
-                    }, MoreExecutors.directExecutor());
-
+            visit(outgoing);
+        } finally {
+            lock.unlock();
         }
-
     }
 
     private enum Status {

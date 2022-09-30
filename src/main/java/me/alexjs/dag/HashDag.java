@@ -1,6 +1,17 @@
 package me.alexjs.dag;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * An implementation of {@link Dag} where the underlying structure is a {@link HashMap}
@@ -178,9 +189,29 @@ public class HashDag<E> implements Dag<E> {
         return descendants;
     }
 
+    private void checkForCircularDependency() {
+        if (sort() == null) {
+            throw new IllegalArgumentException("DAG contains a circular dependency");
+        }
+    }
+
     @Override
     public Set<E> getNodes() {
         return toMap().keySet();
+    }
+
+    @Override
+    public Dag<E> inverted() {
+        Map<E, Collection<E>> result = new HashMap<>();
+        this.map.forEach((source, targets) -> {
+            for (E target : targets) {
+                if (!result.containsKey(target)) {
+                    result.put(target, new HashSet<>());
+                }
+                result.get(target).add(source);
+            }
+        });
+        return new HashDag<>(result);
     }
 
     @Override
@@ -191,7 +222,7 @@ public class HashDag<E> implements Dag<E> {
     }
 
 
-    /* Methods from Collection<T> */
+    /* Methods from Collection<E> */
 
     /**
      * Returns the number of nodes this DAG contains
@@ -282,7 +313,7 @@ public class HashDag<E> implements Dag<E> {
     }
 
     /**
-     * Removes a node and all its incoming and outgoing edges from this DAG.
+     * Removes a node and all its incoming and outgoing edges from this DAG
      *
      * @param node the node to be removed from this DAG, if present
      * @return {@code true} if the node was removed as a result of the call
@@ -407,12 +438,6 @@ public class HashDag<E> implements Dag<E> {
     @Override
     public Dag<E> clone() {
         return new HashDag<>(map);
-    }
-
-    private void checkForCircularDependency() {
-        if (sort() == null) {
-            throw new IllegalArgumentException("DAG contains a circular dependency");
-        }
     }
 
 }

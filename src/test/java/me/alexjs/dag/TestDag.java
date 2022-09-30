@@ -142,4 +142,14 @@ public class TestDag {
 
     }
 
+    @Test
+    public void testInvert() {
+
+        Dag<Integer> dag = helper.populateDagSimple();
+        Dag<Integer> inverted = dag.inverted();
+
+        dag.forEach(i -> Assertions.assertEquals(dag.getAncestors(i), inverted.getDescendants(i)));
+
+    }
+
 }
