@@ -72,7 +72,7 @@ dependencies.
 ```java
 ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-List<Integer> result = new LinkedList<>();
+List<Integer> result = Collections.synchronizedList(new LinkedList<>());
 DagTraversalTask<?> task = new DagTraversalTask<>(dag, result::add, executorService);
 boolean success = task.awaitTermination(10, TimeUnit.MINUTES));
 ```
