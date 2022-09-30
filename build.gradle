@@ -57,7 +57,7 @@ publishing {
 
                 name = 'Dag'
                 description = "Java implementation of a DAG (Directed Acyclic Graph)"
-                url = "$repoHttps"
+                url = repoHttps
 
                 licenses {
                     license {
