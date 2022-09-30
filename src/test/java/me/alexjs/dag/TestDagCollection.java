@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Timeout(2)
@@ -23,8 +24,8 @@ public class TestDagCollection {
         Dag<Integer> dag = new HashDag<>();
 
         Assertions.assertFalse(dag.remove(0));
-        Assertions.assertFalse(dag.removeAll(List.of(1, 2, 3)));
-        Assertions.assertFalse(dag.retainAll(List.of(4, 5, 6)));
+        Assertions.assertFalse(dag.removeAll(Arrays.asList(1, 2, 3)));
+        Assertions.assertFalse(dag.retainAll(Arrays.asList(4, 5, 6)));
 
         dag.add(1);
         Assertions.assertTrue(dag.remove(1));
@@ -32,12 +33,12 @@ public class TestDagCollection {
 
         dag.put(2, 3);
         dag.put(2, 4);
-        Assertions.assertTrue(dag.removeAll(List.of(2, 3, 4)));
+        Assertions.assertTrue(dag.removeAll(Arrays.asList(2, 3, 4)));
         Assertions.assertTrue(dag.isEmpty());
 
         dag.put(5, 6);
         dag.put(7, 6);
-        Assertions.assertTrue(dag.removeAll(List.of(5, 6, 7)));
+        Assertions.assertTrue(dag.removeAll(Arrays.asList(5, 6, 7)));
         Assertions.assertTrue(dag.isEmpty());
 
         dag.put(8, 9);
@@ -68,7 +69,7 @@ public class TestDagCollection {
         Assertions.assertEquals(2, dag.getOutgoing(1).size());
         Assertions.assertEquals(2, dag.getIncoming(6).size());
 
-        Assertions.assertTrue(dag.retainAll(List.of(1, 6)));
+        Assertions.assertTrue(dag.retainAll(Arrays.asList(1, 6)));
         Assertions.assertEquals(0, dag.getOutgoing(1).size());
         Assertions.assertEquals(0, dag.getIncoming(6).size());
 
