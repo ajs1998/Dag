@@ -105,6 +105,14 @@ public interface Dag<E> extends Collection<E>, Cloneable, Serializable {
     Set<E> getNodes();
 
     /**
+     * Creates a DAG with the directions of all edges flipped.
+     * The ancestors of a node become descendants and vice-versa.
+     *
+     * @return a DAG with the directions of all edges flipped
+     */
+    Dag<E> inverted();
+
+    /**
      * Creates a {@link Map} representation of this DAG.
      * Each key of the map will be a node, and each value is a collection of that node's outgoing nodes.
      *

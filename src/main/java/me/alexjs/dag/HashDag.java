@@ -184,6 +184,20 @@ public class HashDag<E> implements Dag<E> {
     }
 
     @Override
+    public Dag<E> inverted() {
+        Map<E, Collection<E>> result = new HashMap<>();
+        this.map.forEach((source, targets) -> {
+            for (E target : targets) {
+                if (!result.containsKey(target)) {
+                    result.put(target, new HashSet<>());
+                }
+                result.get(target).add(source);
+            }
+        });
+        return new HashDag<>(result);
+    }
+
+    @Override
     public Map<E, Collection<E>> toMap() {
         Map<E, Collection<E>> copy = new HashMap<>();
         map.forEach((key, value) -> copy.put(key, new HashSet<>(value)));
