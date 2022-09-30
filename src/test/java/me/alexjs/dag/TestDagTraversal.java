@@ -176,4 +176,26 @@ public class TestDagTraversal {
 
     }
 
+    @Test
+    public void testInterrupt() {
+
+        Dag<Integer> dag = helper.populateDag();
+        List<Integer> sorted = Collections.synchronizedList(new LinkedList<>());
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        DagTraversalTask<?> task = new DagTraversalTask<>(dag, i -> {
+            while (true) ;
+        }, executorService);
+        executorService.shutdown();
+
+        Thread thread = new Thread(() -> {
+            Assertions.assertThrows(InterruptedException.class, () -> task.awaitTermination(2, TimeUnit.SECONDS));
+        });
+        thread.start();
+        thread.interrupt();
+
+        Assertions.assertNotEquals(dag.size(), sorted.size());
+
+    }
+
 }
