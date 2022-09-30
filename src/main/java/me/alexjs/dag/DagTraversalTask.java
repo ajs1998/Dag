@@ -102,9 +102,6 @@ public class DagTraversalTask<T> {
 
     private void visit(Collection<T> nodes) {
         for (final T node : nodes) {
-            if (status.get() != Status.RUNNING) { // TODO Is this necessary?
-                return;
-            }
             executorService.submit(() -> run(node))
                     .addListener(() -> propagate(node), executorService);
         }

@@ -189,7 +189,9 @@ public class TestDagTraversal {
         executorService.shutdown();
 
         Thread thread = new Thread(() -> {
-            Assertions.assertThrows(InterruptedException.class, () -> task.awaitTermination(2, TimeUnit.SECONDS));
+            Assertions.assertThrows(InterruptedException.class, () -> {
+                task.awaitTermination(2, TimeUnit.SECONDS);
+            });
         });
         thread.start();
         thread.interrupt();

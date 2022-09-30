@@ -58,6 +58,9 @@ Map<String, Set<String>> map = dag.toMap();
 
 // Create a shallow copy
 Dag<String> copy = dag.clone();
+
+// Invert the graph edges
+Dag<String> inverted = dag.inverted();
 ```
 
 ### DAG Traversal
