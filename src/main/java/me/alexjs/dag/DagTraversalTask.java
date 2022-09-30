@@ -21,11 +21,12 @@ import java.util.function.Consumer;
  * or if it has no ancestors.
  * If the task applied to any node throws an exception,
  * then this will stop submitting new tasks
- * and {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return false.
+ * and {@link DagTraversalTask#awaitTermination(long, TimeUnit)} will return {@code false}.
+ * <p>
+ * The type parameter is not useful after the constructor is called,
+ * so you could use {@code DagTraversalTask<?>} as your variable type.
  *
- * @param <T> the node type.
- *            This type parameter is not useful after the constructor is called, so you could use
- *            {@code DagTraversalTask<?>} as your variable type.
+ * @param <T> the node type
  */
 public class DagTraversalTask<T> {
 
