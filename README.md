@@ -4,7 +4,7 @@
 
 It's a simple library for creating an interacting with a directed acyclic graph structure in Java.
 It includes a `Dag<T>` interface so you can provide your own implementation.
-`HashDag<T>` is a helpful implementation of `Dag<T>` where the underlying structure is `HashMap<T, HashSet<T>>`.
+`HashDag<T>` is a helpful implementation where the underlying structure is `HashMap<T, HashSet<T>>`.
 
 `Dag<T>` also extends `Collection<T>` so you can use it as you would anything else in the Java Collections API.
 
@@ -73,8 +73,8 @@ dependencies.
 ExecutorService executorService = Executors.newFixedThreadPool(3);
 
 List<Integer> result = new LinkedList<>();
-DagTraversalTask<?> traverser = new DagTraversalTask<>(dag, result::add, executorService);
-boolean success = traverser.awaitTermination(10, TimeUnit.MINUTES));
+DagTraversalTask<?> task = new DagTraversalTask<>(dag, result::add, executorService);
+boolean success = task.awaitTermination(10, TimeUnit.MINUTES));
 ```
 
 ## How do I get it?
