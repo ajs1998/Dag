@@ -25,8 +25,7 @@ dag.add("Clare");
 dag.add("Sarah");
 
 // Find a topologically sorted list of the nodes
-// Ex: ["Alex", "Joe", "Sarah", "Shelby", "Dorothy", "Clare"]
-// Ex: ["Dorothy", "Shelby", "Clare", "Joe", "Alex", "Sarah"]
+// Ex: ["Dorothy", "Joe", "Sarah", "Clare", "Shelby", "Alex"]
 List<String> sorted = dag.sort();
 
 // Find the root nodes of the DAG
