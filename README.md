@@ -80,6 +80,10 @@ boolean success = task.awaitTermination(10, TimeUnit.MINUTES));
 
 [Maven Central package](https://search.maven.org/artifact/me.alexjs/dag)
 
+```groovy
+implementation 'me.alexjs:dag:2.1.0'
+```
+
 ## Notes
 
 - Flexible `Dag<T>` interface so you can write your own implementation
