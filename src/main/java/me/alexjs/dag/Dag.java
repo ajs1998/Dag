@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A Directed Acyclic Graph with the spirit of something the Java Collections Framework
+ * A Directed Acyclic Graph with the spirit of something in the Java Collections Framework
  *
  * @param <E> The node type
  */
@@ -98,6 +98,15 @@ public interface Dag<E> extends Collection<E>, Cloneable, Serializable {
     Set<E> getDescendants(E node);
 
     /**
+     * Gets the set of nodes that are connected to the given node.
+     * The family includes the node's ancestors, descendants, and the node itself.
+     *
+     * @param node the node
+     * @return the family of the given node
+     */
+    Set<E> getFamily(E node);
+
+    /**
      * Gets the full set of nodes this DAG contains
      *
      * @return the nodes this DAG contains
@@ -111,6 +120,22 @@ public interface Dag<E> extends Collection<E>, Cloneable, Serializable {
      * @return a DAG with the directions of all edges flipped
      */
     Dag<E> inverted();
+
+    /**
+     * Creates a DAG that is the union of this DAG and the given DAG
+     *
+     * @param other the other graph
+     * @return the union
+     */
+    Dag<E> union(Dag<E> other);
+
+    /**
+     * Creates a DAG that is the intersection of this DAG and the given DAG
+     *
+     * @param other the other graph
+     * @return the intersection
+     */
+    Dag<E> intersection(Dag<E> other);
 
     /**
      * Creates a {@link Map} representation of this DAG.

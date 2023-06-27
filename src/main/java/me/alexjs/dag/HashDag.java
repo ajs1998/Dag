@@ -189,6 +189,14 @@ public class HashDag<E> implements Dag<E> {
         return descendants;
     }
 
+    public Set<E> getFamily(E node) {
+        checkForCircularDependency();
+        Set<E> result = getAncestorsImpl(node);
+        result.addAll(getDescendantsImpl(node));
+        result.add(node);
+        return result;
+    }
+
     private void checkForCircularDependency() {
         if (sort() == null) {
             throw new IllegalArgumentException("DAG contains a circular dependency");
@@ -203,15 +211,36 @@ public class HashDag<E> implements Dag<E> {
     @Override
     public Dag<E> inverted() {
         Map<E, Collection<E>> result = new HashMap<>();
-        this.map.forEach((source, targets) -> {
+        for (Map.Entry<E, Collection<E>> entry : this.map.entrySet()) {
+            E source = entry.getKey();
+            Collection<E> targets = entry.getValue();
             for (E target : targets) {
                 if (!result.containsKey(target)) {
                     result.put(target, new HashSet<>());
                 }
                 result.get(target).add(source);
             }
-        });
+        }
         return new HashDag<>(result);
+    }
+
+    @Override
+    public Dag<E> union(Dag<E> other) {
+        Dag<E> union = new HashDag<>(map);
+        for (Map.Entry<E, Collection<E>> entry : other.toMap().entrySet()) {
+            union.putAll(entry.getKey(), entry.getValue());
+        }
+        return union;
+    }
+
+    @Override
+    public Dag<E> intersection(Dag<E> other) {
+        // TODO this isn't right
+        Dag<E> complement = new HashDag<>(map);
+        Dag<E> intersection = new HashDag<>(complement.toMap());
+        complement.removeAll(other);
+        intersection.removeAll(complement);
+        return intersection;
     }
 
     @Override
