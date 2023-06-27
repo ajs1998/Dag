@@ -64,8 +64,8 @@ Dag<String> inverted = dag.inverted();
 
 ### DAG Traversal
 
-You can use a `DagTraversalTask` to run a task on each node in multiple threads. Each node is only visited once all of
-its incoming nodes have been visited. This is useful for running complex multithreaded pipelines on nodes with shared
+You can use a `DagTraversalTask` to run a task on each node in multiple threads. Each node is only visited once after all
+of its incoming nodes have been visited. This is useful for running complex multithreaded pipelines on nodes with shared
 dependencies.
 
 ```java
