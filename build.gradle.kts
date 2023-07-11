@@ -24,7 +24,9 @@ dependencies {
 
 jreleaser {
     project {
-        authors.set(listOf("Alex"))
+        description = "Java implementation of a DAG (Directed Acyclic Graph)"
+        inceptionYear = "2022"
+        authors.set(listOf("Alex Sweeney"))
         license = "MIT"
     }
 
