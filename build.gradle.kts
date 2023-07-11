@@ -29,7 +29,6 @@ jreleaser {
         github {
             repoOwner = "ajs1998"
             name = "Dag"
-            token = System.getenv("GITHUB_TOKEN")
 //            host = "github.com"
 //            apiEndpoint = "https://api.github.com"
             overwrite = true
