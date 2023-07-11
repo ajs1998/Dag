@@ -1,3 +1,4 @@
+
 name: Release
 
 on:
@@ -23,18 +24,9 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1.0.4
 
-      - name: Release
-        uses: jreleaser/release-action@v2
+      - name: Release to GitHub
+        run: ./gradlew jreleaserRelease
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_NEXUS2_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           JRELEASER_NEXUS2_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-
-      - name: JReleaser release output
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: jreleaser-release
-          path: |
-            out/jreleaser/trace.log
-            out/jreleaser/output.properties
