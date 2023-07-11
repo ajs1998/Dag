@@ -1,0 +1,11 @@
+[versions]
+junit = "5.8.2"
+
+[plugins]
+jreleaser = { id = "org.jreleaser", version = "1.7.0" }
+
+[libraries]
+
+guava = { module = "com.google.guava:guava", version = "31.1-jre" }
+junit = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junitEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
