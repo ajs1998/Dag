@@ -53,6 +53,10 @@ tasks {
 
     wrapper {
         gradleVersion = "8.2"
-        distributionType = Wrapper.DistributionType.ALL
+        distributionType = if (System.getenv("CI").toBoolean()) {
+            Wrapper.DistributionType.BIN
+        } else {
+            Wrapper.DistributionType.ALL
+        }
     }
 }
