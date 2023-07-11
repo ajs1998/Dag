@@ -1,3 +1,4 @@
+
 name: Release
 
 on:
@@ -27,3 +28,5 @@ jobs:
         run: ./gradlew jreleaserRelease
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_NEXUS2_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          JRELEASER_NEXUS2_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
