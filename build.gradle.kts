@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.alexjs"
-version = "1.0.0"
+version = "0.0.0"
 
 repositories {
     mavenCentral()
@@ -17,6 +17,24 @@ dependencies {
     testImplementation(libs.junit)
     testRuntimeOnly(libs.junitEngine)
 
+}
+
+jreleaser {
+    project {
+        authors.set(listOf("Alex"))
+        license = "MIT" // TODO Handle license better
+    }
+
+    release {
+        github {
+            repoOwner = "ajs1998"
+            name = "Dag"
+            token = System.getenv("GITHUB_TOKEN")
+//            host = "github.com"
+//            apiEndpoint = "https://api.github.com"
+            overwrite = true
+        }
+    }
 }
 
 java {
