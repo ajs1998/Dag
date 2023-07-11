@@ -33,6 +33,6 @@ java {
 //}
 
 tasks.wrapper {
-    gradleVersion = "7.5"
+    gradleVersion = "8.2"
     distributionType = Wrapper.DistributionType.ALL
 }
