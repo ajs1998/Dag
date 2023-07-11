@@ -1,3 +1,6 @@
+import org.jreleaser.model.Active
+import org.jreleaser.model.Signing.Mode
+
 plugins {
     java
     alias(libs.plugins.jreleaser)
@@ -25,11 +28,33 @@ jreleaser {
         license = "MIT"
     }
 
-    release {
-        github {
-            repoOwner = "ajs1998"
-            name = "Dag" // TODO remove after repo is renamed
-            overwrite = true
+    signing {
+        active = Active.ALWAYS
+        mode = Mode.COMMAND
+        armored = true
+    }
+
+//    release {
+//        github {
+//            repoOwner = "ajs1998"
+//            name = "Dag" // TODO remove after repo is renamed
+//            overwrite = true
+//        }
+//    }
+
+    deploy {
+        maven {
+            nexus2 {
+                create("maven-central") {
+                    applyMavenCentralRules = true
+                    active = Active.ALWAYS
+                    url = "https://s01.oss.sonatype.org/service/local"
+                    snapshotUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                    closeRepository = true
+                    releaseRepository = true
+                    stagingRepository("build/staging-deploy")
+                }
+            }
         }
     }
 }
