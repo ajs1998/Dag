@@ -52,7 +52,7 @@ jreleaser {
                     snapshotUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                     closeRepository = true
                     releaseRepository = true
-                    stagingRepository("build/staging-deploy")
+                    stagingRepository("build/libs")
                 }
             }
         }
