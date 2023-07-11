@@ -1,4 +1,4 @@
-package me.alexjs.dag;
+package dev.alexjs.dag;
 
 import java.io.Serializable;
 import java.util.Collection;
