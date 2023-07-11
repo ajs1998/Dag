@@ -1,4 +1,4 @@
-package me.alexjs.dag;
+package dev.alexjs.dag;
 
 import org.junit.jupiter.api.Assertions;
 
