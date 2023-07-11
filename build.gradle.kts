@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.alexjs"
-version = "0.0.0"
+version = "2.2.0"
 
 repositories {
     mavenCentral()
@@ -22,15 +22,13 @@ dependencies {
 jreleaser {
     project {
         authors.set(listOf("Alex"))
-        license = "MIT" // TODO Handle license better
+        license = "MIT"
     }
 
     release {
         github {
             repoOwner = "ajs1998"
-            name = "Dag"
-//            host = "github.com"
-//            apiEndpoint = "https://api.github.com"
+            name = "Dag" // TODO remove after repo is renamed
             overwrite = true
         }
     }
